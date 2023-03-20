@@ -21,12 +21,16 @@ subjects = {'synes': np.arange(1, 18),
             'ctr': np.arange(18, 35)}
 labels = ['Left', 'Right']
 x = [round(len(n_name)/4), round(len(n_name)/4*3)]
+
+# cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["red", "white", "blue"] )
+cmap = matplotlib.colors.ListedColormap(["white", [1., .8, 0.], [1., .4, 0.], (1., 0., 0.)])
+bounds = [0., .25, 0.5, .75, 1.]
+norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
 for sub_type in subjects.keys():
     fig = plt.figure(figsize=(4.4, 5), dpi=500)
     gs1 = gridspec.GridSpec(5, 4, figure=fig)
     gs1.update(wspace=0.05, hspace=0.05)  # set the spacing between axes.
-    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["red", "white", "blue"])
-    divnorm = DivergingNorm(vmin=-1, vcenter=0, vmax=1)
+
     for sub, i in zip(subjects[sub_type], range(20)):
         sub_file = 'CorrMatrix_Subject{0}.mat'.format(str(sub).zfill(3))
         print(sub_file)
@@ -36,12 +40,12 @@ for sub_type in subjects.keys():
         fc = io.loadmat(fc_file)
 
         # connectivity matrix
-        Xfc = fc['CorrMatrix']
+        Xfc = abs(fc['CorrMatrix'])
         np.fill_diagonal(Xfc, 0)
 
         ax = plt.subplot(gs1[i])
         # ax = sns.heatmap(Xfc, square = True, cmap = cmap, norm=divnorm)
-        im = ax.imshow(Xfc, cmap=cmap, norm=divnorm)
+        im = ax.imshow(Xfc, cmap=cmap, norm=norm)
         ax.set_title('Sub{0}'.format(str(sub).zfill(3)), fontsize=5, y=0.8)
 
         # thick line between the large cells
@@ -70,6 +74,6 @@ for sub_type in subjects.keys():
     cbar.ax.tick_params(labelsize=6)
     cbar.outline.set_linewidth(0.6)
     plt.subplots_adjust(wspace=0, hspace=0)
-    plt.text(0, 1.2, sub_type, horizontalalignment='center')
+    plt.text(0.5, 1.2, sub_type, horizontalalignment='center')
     plt.savefig(os.getcwd() + '/plots/connectivity_matrices_{0}'.format(sub_type), transparent=True)
     plt.show()
