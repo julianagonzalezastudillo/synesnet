@@ -16,9 +16,11 @@ def channel_idx(ch_names):
         if ch_names[i][-1] == 'R':
             RH_idx = np.append(RH_idx, i)
             LH_idx = np.append(LH_idx, ch_names.index(ch_names[i][:-1] + 'L'))  # find homologue
+            # print('R: {0}, L: {1}'.format(ch_names[int(i)], ch_names[ch_names.index(ch_names[i][:-1] + 'L')]))
         elif ch_names[i][-2:] == 'R\n':
             RH_idx = np.append(RH_idx, i)
-            LH_idx = np.append(LH_idx, ch_names.index(ch_names[i][:-2] + 'R\n'))  # find homologue
+            LH_idx = np.append(LH_idx, ch_names.index(ch_names[i][:-2] + 'L\n'))  # find homologue
+            # print('R: {0}, L: {1}'.format(ch_names[int(i)], ch_names[ch_names.index(ch_names[i][:-2] + 'L\n')]))
 
     return RH_idx.astype(int), LH_idx.astype(int)
 
@@ -80,11 +82,6 @@ for sub_file in os.listdir(path + 'symetrical_corr_mat'):
     # Xnet = {'strength': strength,
     #         'laterality': lat}
     net_file = net_path + '_'.join(('strength', sub_file.split("_")[-1]))
-    sio.savemat(net_file, {'strength': strength})
+    # sio.savemat(net_file, {'strength': strength})
     net_file = net_path + '_'.join(('laterality', sub_file.split("_")[-1]))
-    sio.savemat(net_file, {'laterality': lat})
-
-
-
-
-
+    # sio.savemat(net_file, {'laterality': lat})
