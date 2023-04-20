@@ -23,9 +23,11 @@ labels = ['Left', 'Right']
 x = [round(len(n_name)/4), round(len(n_name)/4*3)]
 
 # cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["red", "white", "blue"] )
-cmap = matplotlib.colors.ListedColormap(["white", [1., .8, 0.], [1., .4, 0.], (1., 0., 0.)])
-bounds = [0., .25, 0.5, .75, 1.]
-norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+# cmap = matplotlib.colors.ListedColormap(["white", [1., .8, 0.], [1., .4, 0.], (1., 0., 0.)])
+# bounds = [0., .25, 0.5, .75, 1.]
+# norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+cmap = plt.cm.get_cmap('plasma')
+cmap = cmap.reversed()
 for sub_type in subjects.keys():
     fig = plt.figure(figsize=(4.4, 5), dpi=500)
     gs1 = gridspec.GridSpec(5, 4, figure=fig)
@@ -44,8 +46,7 @@ for sub_type in subjects.keys():
         np.fill_diagonal(Xfc, 0)
 
         ax = plt.subplot(gs1[i])
-        # ax = sns.heatmap(Xfc, square = True, cmap = cmap, norm=divnorm)
-        im = ax.imshow(Xfc, cmap=cmap, norm=norm)
+        im = ax.imshow(Xfc, cmap=cmap)
         ax.set_title('Sub{0}'.format(str(sub).zfill(3)), fontsize=5, y=0.8)
 
         # thick line between the large cells
@@ -63,10 +64,7 @@ for sub_type in subjects.keys():
         [ax.spines[axis].set_linewidth(0.6) for axis in ['top', 'bottom', 'left', 'right']]
 
     # borders
-    fig.subplots_adjust(bottom=0.01)
-    fig.subplots_adjust(top=0.99)
-    fig.subplots_adjust(right=0.99)
-    fig.subplots_adjust(left=0.07)
+    fig.subplots_adjust(bottom=0.01, top=0.99, right=0.99, left=0.07)
 
     # colorbar
     cbar_ax = fig.add_axes([0.32, 0.09, 0.66, 0.05])
