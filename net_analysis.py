@@ -5,6 +5,7 @@ from scipy import io
 import networkx as nx
 from net_metrics import local_laterality
 import bct
+from net.core import coreness
 
 
 class bcolors:
@@ -40,13 +41,17 @@ for sub_file in os.listdir(path + 'symetrical_corr_mat'):
     lat = local_laterality(Xfc, n_name)  # laterality
     geff = bct.efficiency_wei(Xfc)
     leff = bct.efficiency_wei(Xfc, local=True)
+    C, isCore = coreness(Xfc)  # coreness
     # sw = nx.sigma(Xfc)
 
     # save
     Xnet = {'strength': strength,
             'laterality': lat,
             'global_efficiency': geff,
-            'local_efficiency': leff}
+            'local_efficiency': leff,
+            'coreness': C,
+            'isCore': isCore
+            }
     net_file = net_path + '_'.join(('net_metrics', sub_file.split("_")[-1]))
     sio.savemat(net_file, Xnet)
     # net_file = net_path + '_'.join(('laterality', sub_file.split("_")[-1]))
