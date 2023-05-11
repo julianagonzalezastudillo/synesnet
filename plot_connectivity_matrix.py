@@ -26,8 +26,8 @@ x = [round(len(n_name)/4), round(len(n_name)/4*3)]
 # cmap = matplotlib.colors.ListedColormap(["white", [1., .8, 0.], [1., .4, 0.], (1., 0., 0.)])
 # bounds = [0., .25, 0.5, .75, 1.]
 # norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
-cmap = plt.cm.get_cmap('plasma')
-cmap = cmap.reversed()
+# cmap = plt.cm.get_cmap('plasma')
+# cmap = cmap.reversed()
 for sub_type in subjects.keys():
     fig = plt.figure(figsize=(4.4, 5), dpi=500)
     gs1 = gridspec.GridSpec(5, 4, figure=fig)
@@ -42,11 +42,12 @@ for sub_type in subjects.keys():
         fc = io.loadmat(fc_file)
 
         # connectivity matrix
-        Xfc = abs(fc['CorrMatrix'])
+        # Xfc = abs(fc['CorrMatrix'])
+        Xfc = fc['CorrMatrix']
         np.fill_diagonal(Xfc, 0)
 
         ax = plt.subplot(gs1[i])
-        im = ax.imshow(Xfc, cmap=cmap)
+        im = ax.imshow(Xfc, cmap='RdYlBu', vmax=np.max(Xfc), vmin=-np.max(Xfc))
         ax.set_title('Sub{0}'.format(str(sub).zfill(3)), fontsize=5, y=0.8)
 
         # thick line between the large cells
