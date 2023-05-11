@@ -23,7 +23,8 @@ with open(path + "BN_Atlas_246_LUT_reoriented.txt", "r") as filestream:
     for line in filestream:
         n_name.append(line.split(",")[0])
 
-for sub_file in os.listdir(path + 'symetrical_corr_mat'):
+for sub in np.arange(1, 35):
+    sub_file = 'CorrMatrix_Subject{0}.mat'.format(str(sub).zfill(3))
     print(sub_file)
 
     # load correlation
@@ -31,30 +32,43 @@ for sub_file in os.listdir(path + 'symetrical_corr_mat'):
     fc = io.loadmat(fc_file)
 
     # connectivity matrix
-    # Xfc = np.nan_to_num(fc['CorrMatrix'])
-    Xfc = abs(fc['CorrMatrix'])
-    np.fill_diagonal(Xfc, 0)
+    # work with 3 possibilities of connectivity matrices
+    # 1. corr = [-1, 1]
+    Xfc = fc['CorrMatrix']
+    net_file_Xfc = net_path + '_'.join(('net_metrics', 'Subject{0}.mat'.format(str(sub).zfill(3))))
 
-    # network metrics
-    G = nx.from_numpy_matrix(Xfc)  # to nx format
-    strength = np.array([v for k, v in G.degree(weight = 'weight')])  # strength
-    lat = local_laterality(Xfc, n_name)  # laterality
-    geff = bct.efficiency_wei(Xfc)
-    leff = bct.efficiency_wei(Xfc, local=True)
-    C, isCore = coreness(Xfc)  # coreness
-    # sw = nx.sigma(Xfc)
+    # 2. abs(corr) = [0, 1]
+    # Xfc_abs = abs(fc['CorrMatrix'])
+    # net_file_abs = net_path + '_'.join(('net_metrics', 'Subject{0}'.format(str(sub).zfill(3)), '_abs.mat'))
 
-    # save
-    Xnet = {'strength': strength,
-            'laterality': lat,
-            'global_efficiency': geff,
-            'local_efficiency': leff,
-            'coreness': C,
-            'isCore': isCore
-            }
-    net_file = net_path + '_'.join(('net_metrics', sub_file.split("_")[-1]))
-    sio.savemat(net_file, Xnet)
-    # net_file = net_path + '_'.join(('laterality', sub_file.split("_")[-1]))
-    # sio.savemat(net_file, {'laterality': lat})
+    # 3. corr[corr>=0] = [0, 1]
+    Xfc_thr = fc['CorrMatrix']
+    Xfc_thr[Xfc_thr <= 0] = 0
+    net_file_thr = net_path + '_'.join(('net_metrics', 'Subject{0}'.format(str(sub).zfill(3)), 'thr.mat'))
+
+    # for X, net_file in zip([Xfc, Xfc_abs, Xfc_thr], [net_file_Xfc, net_file_abs, net_file_thr]):
+    for X, net_file in zip([Xfc, Xfc_thr], [net_file_Xfc, net_file_thr]):
+        np.fill_diagonal(X, 0)
+
+        # network metrics
+        G = nx.from_numpy_matrix(X)  # to nx format
+        strength = np.array([v for k, v in G.degree(weight = 'weight')])  # strength
+        lat = local_laterality(X, n_name)  # laterality
+        geff = bct.efficiency_wei(X)
+        leff = bct.efficiency_wei(X, local=True)
+        C, isCore = coreness(X)  # coreness
+        # sw = nx.sigma(X)
+
+        # save
+        Xnet = {'strength': strength,
+                'laterality': lat,
+                'global_efficiency': geff,
+                'local_efficiency': leff,
+                'coreness': C,
+                'isCore': isCore
+                }
+
+        sio.savemat(net_file, Xnet)
+
 
 
