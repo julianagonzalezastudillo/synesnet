@@ -6,6 +6,7 @@ import networkx as nx
 from net_metrics import local_laterality
 import bct
 from net.core import coreness
+from copy import deepcopy
 
 
 class bcolors:
@@ -34,20 +35,20 @@ for sub in np.arange(1, 35):
     # connectivity matrix
     # work with 3 possibilities of connectivity matrices
     # 1. corr = [-1, 1]
-    Xfc = fc['CorrMatrix']
-    net_file_Xfc = net_path + '_'.join(('net_metrics', 'Subject{0}.mat'.format(str(sub).zfill(3))))
+    # Xfc = deepcopy(fc['CorrMatrix'])
+    # net_file_Xfc = net_path + '_'.join(('net_metrics', 'Subject{0}.mat'.format(str(sub).zfill(3))))
 
     # 2. abs(corr) = [0, 1]
-    # Xfc_abs = abs(fc['CorrMatrix'])
+    # Xfc_abs = abs(deepcopy(fc['CorrMatrix']))
     # net_file_abs = net_path + '_'.join(('net_metrics', 'Subject{0}'.format(str(sub).zfill(3)), '_abs.mat'))
 
-    # 3. corr[corr>=0] = [0, 1]
-    Xfc_thr = fc['CorrMatrix']
+    # 3. corr[corr>=0] = [0, 1]  # wining matrices !!!
+    Xfc_thr = deepcopy(fc['CorrMatrix'])
     Xfc_thr[Xfc_thr <= 0] = 0
     net_file_thr = net_path + '_'.join(('net_metrics', 'Subject{0}'.format(str(sub).zfill(3)), 'thr.mat'))
 
     # for X, net_file in zip([Xfc, Xfc_abs, Xfc_thr], [net_file_Xfc, net_file_abs, net_file_thr]):
-    for X, net_file in zip([Xfc, Xfc_thr], [net_file_Xfc, net_file_thr]):
+    for X, net_file in zip([Xfc_thr], [net_file_thr]):
         np.fill_diagonal(X, 0)
 
         # network metrics
