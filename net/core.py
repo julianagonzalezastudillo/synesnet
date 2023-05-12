@@ -52,6 +52,7 @@ def coreness(X):
 
 
 def normalize(X):
+    # normalize between 0 and one
     # existing zeros to nan to keep them
     X[X == 0] = np.nan
     minX = np.nanmin(X)
