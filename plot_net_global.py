@@ -34,19 +34,23 @@ df = pd.DataFrame()
 sub_list = np.arange(num_sub)+1
 df['sub'] = sub_list
 df['sub_type'] = ['synes']*17 + ['ctr']*17
-for net_key in ['global_efficiency']:
+corr_type = '_thr'
+for net_key in ['local_efficiency', 'local_efficiency']:
     # load net metrics all subjects
     metric = []
     for sub in sub_list:
-        net_file = net_path + '_'.join(('net_metrics', 'Subject' + str(sub).zfill(3)))
+        net_file = net_path + '_'.join(('net_metrics', 'Subject' + str(sub).zfill(3) + '{0}'.format(corr_type)))
         Xnet = io.loadmat(net_file)
-        metric.append(Xnet[net_key][0])
+        if net_key == 'local_efficiency':
+            metric.append(np.mean(Xnet[net_key][0]))
+        else:
+            metric.append(Xnet[net_key][0])
 
     metric = np.array(metric)
     df[net_key] = metric
 
-#%% plot
-fig, ax = plt.subplots()
-ax = sns.catplot(data=df, x="sub_type", y="global_efficiency", kind="box", plot_kws=dict(alpha=0.3))
-ax = sns.swarmplot(data=df, x="sub_type", y="global_efficiency", color=".25")
-plt.show()
+    # plot
+    fig, ax = plt.subplots()
+    ax = sns.catplot(data=df, x="sub_type", y=net_key, kind="box")
+    ax = sns.swarmplot(data=df, x="sub_type", y=net_key, color=".25")
+    plt.show()
