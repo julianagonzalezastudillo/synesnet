@@ -6,15 +6,15 @@ from copy import deepcopy
 import time
 
 t = time.time()
-path = '/network/lustre/iss02/aramis/users/juliana.gonzalez/synesnet/'
-# path = '/Users/juliana.gonzalez/ownCloud/graph_analysis/'
+# path = '/network/lustre/iss02/aramis/users/juliana.gonzalez/synesnet/'
+path = '/Users/juliana.gonzalez/ownCloud/graph_analysis/'
 num_sub = len(os.listdir(path + 'symetrical_corr_mat'))
 
-# Create a directory to save the adjacency matrices
+#%% Create a directory to save the adjacency matrices
 rand_path = path + 'rand_mat'
 os.makedirs(rand_path, exist_ok=True)
 
-for sub in np.arange(2, 35):
+for sub in np.arange(1, 35):
     sub_file = 'CorrMatrix_Subject{0}.mat'.format(str(sub).zfill(3))
     print(sub_file)
 
