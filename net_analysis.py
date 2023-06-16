@@ -42,7 +42,7 @@ for sub in np.arange(1, 35):
     # Xfc_abs = abs(deepcopy(fc['CorrMatrix']))
     # net_file_abs = net_path + '_'.join(('net_metrics', 'Subject{0}'.format(str(sub).zfill(3)), '_abs.mat'))
 
-    # 3. corr[corr>=0] = [0, 1]  # wining matrices !!!
+    # 3. corr[corr>=0] = [0, 1]  # winning matrices !!!
     Xfc_thr = deepcopy(fc['CorrMatrix'])
     Xfc_thr[Xfc_thr <= 0] = 0
     net_file_thr = net_path + '_'.join(('net_metrics', 'Subject{0}'.format(str(sub).zfill(3)), 'thr.mat'))
@@ -52,7 +52,7 @@ for sub in np.arange(1, 35):
         np.fill_diagonal(X, 0)
 
         # network metrics
-        G = nx.from_numpy_matrix(X)  # to nx format
+        G = nx.from_numpy_array(X)  # to nx format
         strength = np.array([v for k, v in G.degree(weight = 'weight')])  # strength
         lat = local_laterality(X, n_name)  # laterality
         geff = bct.efficiency_wei(X)
