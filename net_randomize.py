@@ -5,6 +5,7 @@ import bct
 from copy import deepcopy
 import time
 from net.randomize import rand_wu
+import networkx as nx
 
 # path = '/network/lustre/iss02/aramis/users/juliana.gonzalez/synesnet/'
 path = '/Users/juliana.gonzalez/ownCloud/graph_analysis/'
@@ -42,7 +43,7 @@ for sub in np.arange(1, 35):
             networks.append(Xfc_rand)
 
         # Calculate the node strength
-        # G = nx.from_numpy_array(Xfc_rand[0])  # to nx format
+        # G = nx.from_numpy_array(Xfc_rand)  # to nx format
         # strength = np.array([v for k, v in G.degree(weight='weight')])  # strength
         # node_strengths.append(list(strength))
 
@@ -54,25 +55,25 @@ for sub in np.arange(1, 35):
 
     # print(time.time() - t)
 
-# Plot the node strength distribution for each network
-# import matplotlib.pyplot as plt
-# plt.figure(figsize=(10, 6))
-# colors = plt.cm.get_cmap('rainbow', random_samples)
-# bins = 25
-# for i, strengths in enumerate(node_strengths):
-#     plt.hist(strengths, bins=bins, range=(10, 40), alpha=0.5, color=colors(i))
-#
-# # Plot the mean node strength distribution
-# mean_strengths = np.mean(node_strengths, axis=0)
-# plt.hist(mean_strengths, bins=bins, range=(10, 40), alpha=0.9, color='black', label='Mean random')
-#
-# # Plot the strength distribution of the original network
-# G = nx.from_numpy_array(Xfc_thr)  # to nx format
-# strength = np.array([v for k, v in G.degree(weight='weight')])  # strength
-# plt.hist(strength, bins=bins, range=(10, 40), alpha=0.9, color='white', label='Original', edgecolor='black', linewidth=1.2)
-#
-# plt.xlabel('Node Strength')
-# plt.ylabel('Frequency')
-# plt.title('Node Strength Distribution of Multiple Networks')
-# plt.legend()
-# plt.show()
+    #%% Plot the node strength distribution for each network
+    # import matplotlib.pyplot as plt
+    # plt.figure(figsize=(10, 6))
+    # colors = plt.cm.get_cmap('rainbow', random_samples)
+    # bins = 25
+    # for i, strengths in enumerate(node_strengths):
+    #     plt.hist(strengths, bins=bins, range=(10, 40), alpha=0.5, color=colors(i))
+    #
+    # # Plot the mean node strength distribution
+    # mean_strengths = np.mean(node_strengths, axis=0)
+    # # plt.hist(mean_strengths, bins=bins, range=(10, 40), alpha=0.9, color='black', label='Mean random')
+    #
+    # # Plot the strength distribution of the original network
+    # G = nx.from_numpy_array(Xfc_thr)  # to nx format
+    # strength = np.array([v for k, v in G.degree(weight='weight')])  # strength
+    # plt.hist(strength, bins=bins, range=(10, 40), alpha=0.9, color='white', label='Original', edgecolor='black', linewidth=1.2)
+    #
+    # plt.xlabel('Node Strength')
+    # plt.ylabel('Frequency')
+    # plt.title('SUBJECT {0}: Node Strength Distribution of Multiple Networks'.format(sub))
+    # plt.legend()
+    # plt.show()
