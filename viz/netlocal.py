@@ -49,6 +49,6 @@ def plot_3d_local_metric(X, xyz, n_name, cmap='RdYlBu', return_scatter=False):
     # title.set_position( [0.5, -0.9] )
 
     if return_scatter:
-        return fig, ax, scatter
+        return fig, ax, scatter, cbar
 
     return fig, ax

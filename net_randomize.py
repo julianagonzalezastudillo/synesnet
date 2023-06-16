@@ -4,7 +4,7 @@ from scipy import io
 import bct
 from copy import deepcopy
 import time
-
+from net.randomize import rand_wu
 
 # path = '/network/lustre/iss02/aramis/users/juliana.gonzalez/synesnet/'
 path = '/Users/juliana.gonzalez/ownCloud/graph_analysis/'
@@ -14,8 +14,8 @@ num_sub = len(os.listdir(path + 'symetrical_corr_mat'))
 rand_path = path + 'rand_mat'
 os.makedirs(rand_path, exist_ok=True)
 
-for sub in np.arange(4, 5):
-    t = time.time()
+for sub in np.arange(1, 35):
+    # t = time.time()
     sub_file = 'CorrMatrix_Subject{0}.mat'.format(str(sub).zfill(3))
     print(sub_file)
 
@@ -33,9 +33,13 @@ for sub in np.arange(4, 5):
     # node_strengths = []
     networks = []
     for r in range(random_samples):
-        print('random {0}'.format(r))
-        Xfc_rand = bct.null_model_und_sign(Xfc_thr, bin_swaps=np.shape(Xfc_thr)[0], wei_freq=1)
-        networks.append(Xfc_rand[0])
+        # Xfc_rand = bct.null_model_und_sign(Xfc_thr, bin_swaps=np.shape(Xfc_thr)[0], wei_freq=1)
+        Xfc_rand = rand_wu(Xfc_thr)
+
+        if any(np.array_equal(Xfc_rand, network) for network in networks):
+            r = r - 1
+        else:
+            networks.append(Xfc_rand)
 
         # Calculate the node strength
         # G = nx.from_numpy_array(Xfc_rand[0])  # to nx format
@@ -48,8 +52,8 @@ for sub in np.arange(4, 5):
     filename = os.path.join(rand_path, 'RandMatrices_Subject{0}.mat'.format(str(sub).zfill(3)))
     io.savemat(filename, {'RandMatrices': adjacency_matrices})
 
-    print(time.time() - t)
-    
+    # print(time.time() - t)
+
 # Plot the node strength distribution for each network
 # import matplotlib.pyplot as plt
 # plt.figure(figsize=(10, 6))
