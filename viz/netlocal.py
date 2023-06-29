@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_3d_local_metric(X, xyz, n_name, cmap='RdYlBu', return_scatter=False):
+def plot_3d_local_metric(X, xyz, n_name, cmap='RdYlBu', return_scatter=False, **kwargs):
     """
     Generate a 3D scatter plot with variable point sizes and colors.
 
@@ -14,13 +14,13 @@ def plot_3d_local_metric(X, xyz, n_name, cmap='RdYlBu', return_scatter=False):
     """
 
     fig = plt.figure(figsize=(8, 8), dpi=400)
-    ax = fig.add_subplot(111, projection = '3d')
+    ax = fig.add_subplot(111, projection='3d')
 
     x = xyz[:-1, 0]
     y = xyz[:-1, 1]
     z = xyz[:-1, 2]
     scatter = ax.scatter(x, y, z, s=abs(X/max(abs(X)))*80, c=X, cmap=cmap,
-                         alpha=0.8, linewidth=0.5)
+                         alpha=0.8, linewidth=0.5, **kwargs)
     for i in range(len(n_name)):
         ax.text(x[i], y[i], z[i], n_name[i], fontdict={'size': 3, 'color': 'grey'})
 
@@ -39,7 +39,7 @@ def plot_3d_local_metric(X, xyz, n_name, cmap='RdYlBu', return_scatter=False):
     cbar_ax = fig.add_axes([0.83, 0.25, 0.03, 0.5])
 
     # Add a colorbar to the plot
-    cbar = fig.colorbar(scatter, cax=cbar_ax)
+    cbar = fig.colorbar(scatter, cax=cbar_ax, )
     cbar.ax.tick_params(labelsize=10)
     cbar.outline.set_visible(False)
     cbar.ax.tick_params(labelsize=8)
