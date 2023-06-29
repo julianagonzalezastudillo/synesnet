@@ -33,7 +33,7 @@ def coreness(X):
     N = np.shape(X)[0]
 
     # Density thresholds
-    THRESHOLDS = np.arange(1, N) / (N-1)
+    THRESHOLDS = np.arange(1, N) / (N - 1)
     isCore = np.empty((N, len(THRESHOLDS)))
     isCore[:] = np.nan
 
@@ -43,6 +43,9 @@ def coreness(X):
 
         # normalize min-max
         T = normalize(T)
+
+        # binarize
+        # T[T > 0] = 1
 
         # find core
         isCore[:, iThresh] = coreperiphery(T)
@@ -91,7 +94,7 @@ def coreperiphery(X):
     # nodes with rank lower than rankOfMaxkPlus are assigned to the core,
     # the remaining ones become part of the periphery
     isCore = np.zeros(N)
-    isCore[rankingInd[0: rankOfMaxkPlus+1]] = 1
+    isCore[rankingInd[0: rankOfMaxkPlus + 1]] = 1
     isCore = isCore.astype(bool)
     return isCore
 
