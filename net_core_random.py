@@ -23,7 +23,7 @@ with open(path + "BN_Atlas_246_LUT_reoriented.txt", "r") as filestream:
         n_name.append(line.split(",")[0])
 
 # for sub_file in os.listdir(path + 'symetrical_corr_mat'):
-for sub in range(25, 35):
+for sub in range(1, 35):
     sub_file = 'CorrMatrix_Subject{0}'.format(str(sub).zfill(3))
     print(sub_file)
     t = time.time()
@@ -69,5 +69,13 @@ for sub in range(25, 35):
     if os.path.exists(net_file):
         Xnet = sio.loadmat(net_file)
         Xnet.update({'coreness_norm': C_norm,
-                     'coreness_zcore': C_zscore})
+                     'coreness_zcore': C_zscore,
+                     'coreness_rand': C_rand})
     sio.savemat(net_file, Xnet)
+
+
+
+#%%
+# matrix = np.random.uniform(low=-1, high=1, size=(246, 246))
+# np.fill_diagonal(matrix, 0)
+# matrix[matrix <= 0] = 0
