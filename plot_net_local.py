@@ -7,6 +7,8 @@ import pandas as pd
 import statsmodels.stats.multitest as smt
 import scipy.io as sio
 import math
+from statsmodels.stats.multitest import multipletests
+import statsmodels
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
@@ -38,7 +40,7 @@ lh_ind = [index for index, element in enumerate(n_name) if element.endswith('_L'
 rh_ind = [index for index, element in enumerate(n_name) if element.endswith('_R')]
 
 corr_type = '_thr'
-metric_list = ['strength', 'coreness_norm']
+metric_list = ['strength']
 for net_key in metric_list:
     # Load net metrics for all subjects
     Xnet = np.array([io.loadmat(net_path + f'net_metrics_Subject{str(sub).zfill(3)}{corr_type}')[net_key][0]
@@ -52,6 +54,17 @@ for net_key in metric_list:
     t_val, p_val = stats.ttest_ind(Xnet_syn, Xnet_ctr)
     t_val = [0 if math.isnan(x) else x for x in t_val]  # put to 0 the t-val=nan
 
+    # Perform FDR correction
+    rejected, corrected_p_values, _, _ = multipletests(p_val, method='fdr_bh')
+    statsmodels.stats.multitest.fdrcorrection(p_val, alpha=0.05, method='indep', is_sorted=False)
+
+    # Corrected by hand FDR (Benjamini-Hochberg)
+    rank = np.arange(len(p_val))+1
+    rank_idx = np.argsort(p_val)
+    N = len(p_val)
+    p_val_corrected_ = p_val_corrected = np.sort(p_val)*N/rank
+    p_val_corrected[rank_idx] = p_val_corrected_
+
     # Mean across subjects
     Xnet_syn_mean = Xnet_syn.mean(axis=0)
     Xnet_ctr_mean = Xnet_ctr.mean(axis=0)
@@ -63,7 +76,8 @@ for net_key in metric_list:
                        f'{net_key}_synes': Xnet_syn.mean(axis=0),
                        f'{net_key}_ctr': Xnet_ctr.mean(axis=0),
                        't-val': t_val,
-                       'p-val': p_val})
+                       'p-val': p_val,
+                       'p-val_corrected': p_val_corrected})
 
     # for t-values, keep significant t-values
     X_t_val = np.where((df['p-val'] > 0.05), 0, df['t-val'])  # t-val higher than 0.05
@@ -78,7 +92,7 @@ for net_key in metric_list:
     print(f'Average ctr {net_key}: {Xnet_ctr.mean(axis=0).mean()}')
 
     print('-' * 100)
-    print(df.loc[df['p-val'] < 0.05, ["node", "node_complete", "p-val", "t-val"]].sort_values(by='p-val'))
+    print(df.loc[df['p-val'] < 0.05, ["node", "node_complete", "p-val", "p-val_corrected",  "t-val"]].sort_values(by='p-val'))
 
     for X, X_name in zip([Xnet_syn_mean, Xnet_ctr_mean, X_t_val],
                          [f'{net_key}{corr_type}_mean_syn',
