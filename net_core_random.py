@@ -79,7 +79,7 @@ for sub in range(1, 35):
         Xnet.update({'coreness_norm{0}'.format(selec): C_norm,
                      'coreness_zcore{0}'.format(selec): C_zscore,
                      'coreness_rand{0}'.format(selec): C_rand})
-    # sio.savemat(net_file, Xnet)
+    sio.savemat(net_file, Xnet)
 
 
 
