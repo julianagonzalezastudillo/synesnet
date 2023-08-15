@@ -9,7 +9,6 @@ import scipy.io as sio
 import math
 from statsmodels.stats.multitest import multipletests
 import statsmodels
-
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from os import path
@@ -25,23 +24,39 @@ num_sub = len(os.listdir(path + 'symetrical_corr_mat'))
 # nodes positions
 results_file = path + 'resultsROI_Subject001_Condition001.mat'
 results = io.loadmat(results_file)
-xyz = results['xyz'][0]
-xyz = np.array([xyz[i][0][:] for i in np.arange(np.size(xyz))])
+xyz_all = results['xyz'][0][:-1]
+xyz_all = np.array([xyz_all[i][0][:] for i in np.arange(np.size(xyz_all))])
 
 # nodes names
-n_name = []
-n_name_full = []
+n_name_all = []
+n_name_full_all = []
 with open(path + "BN_Atlas_246_LUT_reoriented.txt", "r") as filestream:
     for line in filestream:
-        n_name.append(line.split(",")[0])
-        n_name_full.append(line.split(",")[1].strip())
-
-lh_ind = [index for index, element in enumerate(n_name) if element.endswith('_L')]
-rh_ind = [index for index, element in enumerate(n_name) if element.endswith('_R')]
+        n_name_all.append(line.split(",")[0])
+        n_name_full_all.append(line.split(",")[1].strip())
 
 corr_type = '_thr'
-metric_list = ['strength']
+metric_list = ['coreness_norm_strength_selection']
+# metric_list = ['strength']
+
 for net_key in metric_list:
+    # Load node names
+    if net_key.split('_')[-1] == 'selection':
+        # Open strength t-val file
+        strength_stat_file = os.path.join(os.getcwd(), 'plots', 'glb', 'strength_thr_t-val.mat')
+        strength_stat = io.loadmat(strength_stat_file)
+        idx_select = strength_stat['names_idx'][0]
+        n_name = list(np.array(n_name_all)[idx_select])
+        n_name_full = list(np.array(n_name_full_all)[idx_select])
+        xyz = xyz_all[idx_select]
+    else:
+        n_name = n_name_all
+        n_name_full = n_name_full_all
+        xyz = xyz_all
+
+    lh_ind = [index for index, element in enumerate(n_name) if element.endswith('_L')]
+    rh_ind = [index for index, element in enumerate(n_name) if element.endswith('_R')]
+
     # Load net metrics for all subjects
     Xnet = np.array([io.loadmat(net_path + f'net_metrics_Subject{str(sub).zfill(3)}{corr_type}')[net_key][0]
                      for sub in range(1, num_sub + 1)])
@@ -69,8 +84,8 @@ for net_key in metric_list:
     Xnet_syn_mean = Xnet_syn.mean(axis=0)
     Xnet_ctr_mean = Xnet_ctr.mean(axis=0)
 
-    pd.set_option("display.precision", 2)
     # Create DataFrame for results
+    pd.set_option("display.precision", 2)
     df = pd.DataFrame({'node': n_name,
                        'node_complete': n_name_full,
                        f'{net_key}_synes': Xnet_syn.mean(axis=0),
@@ -145,3 +160,20 @@ for net_key in metric_list:
         # cbar = plt.colorbar(sm, ax=ax)
         # plt.show()
 
+#%% Plot ROIs from the literature
+functional_activation = np.array([32, 54, 73, 78])-1
+literature = np.array([20, 32, 36, 54, 61, 62, 67, 69, 71, 73])-1
+selection = literature
+X_ = np.zeros(len(n_name_all))
+X_[:] = 0
+X_[selection] = 1
+norm = plt.Normalize(vmin=-abs(X_).max(), vmax=abs(X_).max())
+rgb_values = cmap(norm(X_))
+Xvalues = {'Xnet': X_,
+           'xyz': xyz_all,
+           'color': rgb_values,
+           'names': np.array(n_name_all)[selection],  # to mention only the significant nodes
+           'names_idx': np.nonzero(X_)
+           }
+nodes_file = os.path.join(os.getcwd(), 'plots', 'glb', 'literature.mat')
+# sio.savemat(nodes_file, Xvalues)
