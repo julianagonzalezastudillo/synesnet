@@ -16,9 +16,9 @@ def plot_3d_local_metric(X, xyz, n_name, cmap='RdYlBu', return_scatter=False, **
     fig = plt.figure(figsize=(8, 8), dpi=400)
     ax = fig.add_subplot(111, projection='3d')
 
-    x = xyz[:-1, 0]
-    y = xyz[:-1, 1]
-    z = xyz[:-1, 2]
+    x = xyz[:, 0]
+    y = xyz[:, 1]
+    z = xyz[:, 2]
     scatter = ax.scatter(x, y, z, s=abs(X/max(abs(X)))*80, c=X, cmap=cmap,
                          alpha=0.8, linewidth=0.5, **kwargs)
     for i in range(len(n_name)):
