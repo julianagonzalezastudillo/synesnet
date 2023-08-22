@@ -11,12 +11,12 @@ import networkx as nx
 path = '/Users/juliana.gonzalez/ownCloud/graph_analysis/'
 num_sub = len(os.listdir(path + 'symetrical_corr_mat'))
 
-strength_select = True
 # Create a directory to save the adjacency matrices
 rand_path = path + 'rand_mat'
 os.makedirs(rand_path, exist_ok=True)
 
 # Open strength t-val file
+strength_select = False
 strength_stat_file = os.path.join(os.getcwd(), 'plots', 'glb', 'strength_thr_t-val.mat')
 strength_stat = io.loadmat(strength_stat_file)
 idx_select = strength_stat['names_idx'][0]
@@ -40,14 +40,15 @@ for sub in np.arange(1, 35):
     # node_strengths = []
     networks = []
     for r in range(random_samples):
-        # Xfc_rand = bct.null_model_und_sign(Xfc_thr, bin_swaps=np.shape(Xfc_thr)[0], wei_freq=1)
+        # Randomize conserving strength distribution
+        Xfc_rand = bct.null_model_und_sign(Xfc_thr, bin_swaps=np.shape(Xfc_thr)[0], wei_freq=1)
 
-        if strength_select:
-            Xfc_rand = rand_wu(Xfc_thr[idx_select][:, idx_select])
-            filename = os.path.join(rand_path, 'RandMatrices_Subject{0}_strength_selection.mat'.format(str(sub).zfill(3)))
-        else:
-            Xfc_rand = rand_wu(Xfc_thr)
-            filename = os.path.join(rand_path, 'RandMatrices_Subject{0}.mat'.format(str(sub).zfill(3)))
+        # if strength_select:
+        #     Xfc_rand = rand_wu(Xfc_thr[idx_select][:, idx_select])
+        #     filename = os.path.join(rand_path, 'RandMatrices_Subject{0}_strength_selection.mat'.format(str(sub).zfill(3)))
+        # else:
+        #     Xfc_rand = rand_wu(Xfc_thr)
+        #     filename = os.path.join(rand_path, 'RandMatrices_Subject{0}.mat'.format(str(sub).zfill(3)))
 
         # Check if the new rand network already exists
         if any(np.array_equal(Xfc_rand, network) for network in networks):
@@ -63,6 +64,7 @@ for sub in np.arange(1, 35):
     adjacency_matrices = np.array([network for network in networks])
 
     # Save the concatenated matrix to a .mat file
+    filename = os.path.join(path, 'rand_mat_strength(equal)', 'RandMatrices_Subject{0}.mat'.format(str(sub).zfill(3)))
     io.savemat(filename, {'RandMatrices': adjacency_matrices})
 
     # print(time.time() - t)
