@@ -32,9 +32,11 @@ results_file = os.path.join(path, 'resultsROI_Subject001_Condition001.mat')
 strength_stat_file = os.path.join(os.getcwd(), 'plots', 'glb', 'strength_thr_t-val.mat')
 
 # CONSTANTS
+P_VAL = 0.01
+SELECTION = True
 corr_type = '_thr'
-selection = True
-metric_list = ['coreness_norm']  # ['strength', 'coreness_norm_strength_selection']
+metric_list = ['coreness_norm_by_rand_conserve_strenght_distribution']
+# ['coreness_norm']  # ['strength', 'coreness_norm_strength_selection']
 
 # number of subjects
 num_sub = len(os.listdir(os.path.join(path, 'symetrical_corr_mat')))
@@ -54,7 +56,7 @@ with open(node_file, "r") as filestream:
 # Open strength t-val file
 strength_stat = io.loadmat(strength_stat_file)
 idx_select = strength_stat['names_idx'][0]
-idx_select = idx_select if selection else slice(None)
+idx_select = idx_select if SELECTION else slice(None)
 
 for net_key in metric_list:
     # Load net metrics for all subjects
@@ -68,6 +70,7 @@ for net_key in metric_list:
     rh_ind = [index for index, element in enumerate(np.array(n_name)[idx_select]) if element.endswith('_R')]
 
     # Split synesthetic and control subjects
+    Xnet[np.isnan(Xnet) | np.isinf(Xnet)] = 0
     Xnet_syn = Xnet[:17, :]
     Xnet_ctr = Xnet[17:, :]
 
@@ -78,7 +81,7 @@ for net_key in metric_list:
     # Perform FDR correction
     p_val = p_val[idx_select]
     rejected, corrected_p_values, _, _ = multipletests(p_val, method='fdr_bh')
-    statsmodels.stats.multitest.fdrcorrection(p_val, alpha=0.05, method='indep', is_sorted=False)
+    statsmodels.stats.multitest.fdrcorrection(p_val, alpha=P_VAL, method='indep', is_sorted=False)
 
     # Corrected by hand FDR (Benjamini-Hochberg)
     rank = np.arange(len(p_val))+1
@@ -105,7 +108,7 @@ for net_key in metric_list:
 
     # for t-values, keep significant t-values
     X_ = np.zeros(len(n_name))  # 246
-    X_[idx_select] = np.where((df['p-val'] > 0.01), 0, df['t-val'])
+    X_[idx_select] = np.where((df['p-val_corrected'] > P_VAL), 0, df['t-val'])
     X_t_val = X_
 
     # print Hub list
@@ -118,9 +121,11 @@ for net_key in metric_list:
     print(f'Average ctr {net_key}: {Xnet_ctr.mean(axis=0).mean()}')
 
     print('-' * 100)
-    # print(df.loc[df['p-val'] < 0.05, ["node", "node_complete", "p-val", "p-val_corrected",  "t-val"]]
-    #       .sort_values(by='p-val_corrected'))
-    print(df.sort_values(by='p-val_corrected'))
+    if SELECTION:
+        print(df.sort_values(by='p-val_corrected'))
+    else:
+        print(df.loc[df['p-val'] < P_VAL, ["node", "node_complete", "p-val", "p-val_corrected", "t-val"]]
+              .sort_values(by='p-val'))
 
     for X, X_name in zip([Xnet_syn_mean, Xnet_ctr_mean, X_t_val],
                          [f'{net_key}{corr_type}_mean_syn',
@@ -129,24 +134,28 @@ for net_key in metric_list:
         norm = colors.TwoSlopeNorm(vmin=-max(abs(X)), vmax=max(abs(X)), vcenter=0)
         kwargs = {"norm": norm} if X_name == f'{net_key}{corr_type}_t-val' else {}
 
-        fig, ax, scatter, cbar = plot_3d_local_metric(X, xyz, n_name, cmap='Spectral', return_scatter=True, **kwargs)
-        plot_name = f'{X_name}.png'
-        plt.savefig(os.getcwd() + '/plots/' + plot_name, transparent=True)
-        plt.show()
-
-        # save .mat to plot 3D brain with matlab
-        cmap = scatter.get_cmap()
+        # Colormap for t-val
         if X_name == f'{net_key}{corr_type}_t-val':
             norm = plt.Normalize(vmin=-abs(X).max(), vmax=abs(X).max())
         else:
             norm = plt.Normalize(vmin=X.min(), vmax=X.max())
+
+        # Plot and generate scatter info to plot in matlab
+        fig, ax, scatter, cbar = plot_3d_local_metric(X, xyz, n_name, cmap='Spectral', return_scatter=True, **kwargs)
+        plt.savefig(os.path.join(os.getcwd(), 'plots', f'{X_name}.png'), transparent=True)
+        plt.show()
+
+        cmap = scatter.get_cmap()
         rgb_values = cmap(norm(X))
+
+        # save .mat to plot 3D brain with matlab
         Xvalues = {'Xnet': X,
                    'xyz': xyz,
                    'color': rgb_values,
                    'names': np.array(n_name)[np.nonzero(X_t_val)],  # to mention only the significant nodes
                    'names_idx': np.nonzero(X_t_val)
                    }
+        X_name += '_selection' if SELECTION else ''
         nodes_file = os.path.join(os.getcwd(), 'plots', 'glb', f'{X_name}.mat')
         sio.savemat(nodes_file, Xvalues)
 
@@ -158,6 +167,7 @@ for net_key in metric_list:
                        'names': np.array(n_name)[np.nonzero(X_t_val[ind])[0]+ind[0]],  # to mention only the significant nodes
                        'names_idx': np.nonzero(X_t_val[ind])[0]
                        }
+
             nodes_file = os.path.join(os.getcwd(), 'plots', 'glb', f'{X_name}_{side}.mat')
             sio.savemat(nodes_file, Xvalues)
 
