@@ -10,6 +10,7 @@ from statsmodels.stats.multitest import multipletests
 import statsmodels
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
+import matplotlib.colors as mcolors
 from os import path
 import sys
 sys.path.append(path.abspath('../netviz'))
@@ -33,10 +34,12 @@ strength_stat_file = os.path.join(os.getcwd(), 'plots', 'glb', 'strength_thr_t-v
 
 # CONSTANTS
 P_VAL = 0.05
-SELECTION = True
+SELECTION = False
 corr_type = '_thr'
-metric_list = ['coreness_norm_by_rand_conserve_strenght_distribution']
+metric_list = ['coreness']
 # ['coreness_norm']  # ['strength', 'coreness_norm_strength_selection']
+# ['coreness_norm_by_rand_conserve_strenght_distribution']
+cmap = 'Spectral'
 
 if SELECTION:
     p_val_type = 'p-val_corrected'
@@ -136,18 +139,23 @@ for net_key in metric_list:
                          [f'{net_key}{corr_type}_mean_syn',
                           f'{net_key}{corr_type}_mean_ctr',
                           f'{net_key}{corr_type}_t-val']):
-        norm = colors.TwoSlopeNorm(vmin=-max(abs(X)), vmax=max(abs(X)), vcenter=0)
-        kwargs = {"norm": norm} if X_name == f'{net_key}{corr_type}_t-val' else {}
 
         # Colormap for t-val
         if X_name == f'{net_key}{corr_type}_t-val':
-            norm = plt.Normalize(vmin=-abs(X).max(), vmax=abs(X).max())
+            cmap = 'Spectral'
+            norm = colors.TwoSlopeNorm(vmin=-max(abs(X)), vmax=max(abs(X)), vcenter=0)
+        elif X_name == 'coreness_thr_mean_syn' or X_name == 'coreness_thr_mean_ctr':
+            cmap_colors = ['#FF4A37', '#007BC4']
+            cmap = mcolors.LinearSegmentedColormap.from_list('RdBl', cmap_colors, N=2)
+            bounds = [min(X), 0.5, max(X)]
+            norm = mcolors.BoundaryNorm(bounds, cmap.N)
         else:
             norm = plt.Normalize(vmin=X.min(), vmax=X.max())
+        kwargs = {"norm": norm}
 
         # Plot and generate scatter info to plot in matlab
-        fig, ax, scatter, cbar = plot_3d_local_metric(X, xyz, n_name, cmap='Spectral', return_scatter=True, **kwargs)
-        plt.savefig(os.path.join(os.getcwd(), 'plots', f'{X_name}.png'), transparent=True)
+        fig, ax, scatter, cbar = plot_3d_local_metric(X, xyz, n_name, cmap=cmap, return_scatter=True, **kwargs)
+        # plt.savefig(os.path.join(os.getcwd(), 'plots', f'{X_name}.png'), transparent=True)
         plt.show()
 
         cmap = scatter.get_cmap()
@@ -204,4 +212,4 @@ Xvalues = {'Xnet': X_,
            'names_idx': np.nonzero(X_)
            }
 nodes_file = os.path.join(os.getcwd(), 'plots', 'glb', 'literature.mat')
-sio.savemat(nodes_file, Xvalues)
+# sio.savemat(nodes_file, Xvalues)
