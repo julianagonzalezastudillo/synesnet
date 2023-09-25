@@ -32,11 +32,16 @@ results_file = os.path.join(path, 'resultsROI_Subject001_Condition001.mat')
 strength_stat_file = os.path.join(os.getcwd(), 'plots', 'glb', 'strength_thr_t-val.mat')
 
 # CONSTANTS
-P_VAL = 0.01
+P_VAL = 0.05
 SELECTION = True
 corr_type = '_thr'
 metric_list = ['coreness_norm_by_rand_conserve_strenght_distribution']
 # ['coreness_norm']  # ['strength', 'coreness_norm_strength_selection']
+
+if SELECTION:
+    p_val_type = 'p-val_corrected'
+else:
+    p_val_type = 'p-val'
 
 # number of subjects
 num_sub = len(os.listdir(os.path.join(path, 'symetrical_corr_mat')))
@@ -66,8 +71,8 @@ for net_key in metric_list:
     X_ = np.zeros([np.shape(Xnet)[0], len(n_name)])  # 34x246
     X_[:, idx_select] = Xnet[:, idx_select]
     Xnet = X_
-    lh_ind = [index for index, element in enumerate(np.array(n_name)[idx_select]) if element.endswith('_L')]
-    rh_ind = [index for index, element in enumerate(np.array(n_name)[idx_select]) if element.endswith('_R')]
+    lh_ind = [index for index, element in enumerate(np.array(n_name)) if element.endswith('_L')]
+    rh_ind = [index for index, element in enumerate(np.array(n_name)) if element.endswith('_R')]
 
     # Split synesthetic and control subjects
     Xnet[np.isnan(Xnet) | np.isinf(Xnet)] = 0
@@ -108,7 +113,7 @@ for net_key in metric_list:
 
     # for t-values, keep significant t-values
     X_ = np.zeros(len(n_name))  # 246
-    X_[idx_select] = np.where((df['p-val_corrected'] > P_VAL), 0, df['t-val'])
+    X_[idx_select] = np.where((df[p_val_type] > P_VAL), 0, df['t-val'])
     X_t_val = X_
 
     # print Hub list
@@ -124,7 +129,7 @@ for net_key in metric_list:
     if SELECTION:
         print(df.sort_values(by='p-val_corrected'))
     else:
-        print(df.loc[df['p-val'] < P_VAL, ["node", "node_complete", "p-val", "p-val_corrected", "t-val"]]
+        print(df.loc[df['p-val'] < P_VAL, ["node", "node_complete", f'{net_key}_synes', f'{net_key}_ctr', "p-val", "p-val_corrected", "t-val"]]
               .sort_values(by='p-val'))
 
     for X, X_name in zip([Xnet_syn_mean, Xnet_ctr_mean, X_t_val],
@@ -199,4 +204,4 @@ Xvalues = {'Xnet': X_,
            'names_idx': np.nonzero(X_)
            }
 nodes_file = os.path.join(os.getcwd(), 'plots', 'glb', 'literature.mat')
-# sio.savemat(nodes_file, Xvalues)
+sio.savemat(nodes_file, Xvalues)
