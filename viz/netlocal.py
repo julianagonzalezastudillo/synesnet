@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_3d_local_metric(X, xyz, n_name, cmap='RdYlBu', return_scatter=False, **kwargs):
+def plot_3d_local_metric(X, xyz, n_name, cmap='RdYlBu', return_scatter=False, X_norm_by_max=None, **kwargs):
     """
     Generate a 3D scatter plot with variable point sizes and colors.
 
@@ -19,7 +19,11 @@ def plot_3d_local_metric(X, xyz, n_name, cmap='RdYlBu', return_scatter=False, **
     x = xyz[:, 0]
     y = xyz[:, 1]
     z = xyz[:, 2]
-    scatter = ax.scatter(x, y, z, s=abs(X/max(abs(X)))*80, c=X, cmap=cmap,
+    if X_norm_by_max is None:
+        s = abs(X/max(abs(X)))*80
+    else:
+        s = abs(X/X_norm_by_max)*80
+    scatter = ax.scatter(x, y, z, s=s, c=X, cmap=cmap,
                          alpha=0.8, linewidth=0.5, **kwargs)
     for i in range(len(n_name)):
         ax.text(x[i], y[i], z[i], n_name[i], fontdict={'size': 3, 'color': 'grey'})
