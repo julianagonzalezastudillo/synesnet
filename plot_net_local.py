@@ -11,6 +11,7 @@ import statsmodels
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.colors as mcolors
+from matplotlib.colors import LinearSegmentedColormap
 from os import path
 import sys
 sys.path.append(path.abspath('../netviz'))
@@ -31,12 +32,14 @@ net_path = os.path.join(path, 'net_metrics')
 node_file = os.path.join(path, 'BN_Atlas_246_LUT_reoriented.txt')
 results_file = os.path.join(path, 'resultsROI_Subject001_Condition001.mat')
 strength_stat_file = os.path.join(os.getcwd(), 'plots', 'glb', 'strength_thr_t-val.mat')
+coreness_stat_file = os.path.join(os.getcwd(), 'plots', 'glb', 'coreness_norm_by_rand_conserve_strenght_distribution_thr_t-val_selection.mat')
 
 # CONSTANTS
 P_VAL = 0.05
-SELECTION = False
+SELECTION = True  # True: select base on strength significance
 corr_type = '_thr'
 metric_list = ['coreness']
+# ['coreness']
 # ['coreness_norm']  # ['strength', 'coreness_norm_strength_selection']
 # ['coreness_norm_by_rand_conserve_strenght_distribution']
 cmap = 'Spectral'
@@ -67,6 +70,12 @@ idx_select = strength_stat['names_idx'][0]
 idx_select = idx_select if SELECTION else slice(None)
 
 for net_key in metric_list:
+
+    if SELECTION and net_key == 'coreness':
+        coreness_stat = io.loadmat(coreness_stat_file)
+        idx_select_coreness = coreness_stat['names_idx'][0]
+        idx_select = list(set(idx_select) & set(idx_select_coreness))
+
     # Load net metrics for all subjects
     Xnet = load_net_metrics(net_path, net_key, corr_type, num_sub, idx_select)
 
@@ -144,17 +153,21 @@ for net_key in metric_list:
         if X_name == f'{net_key}{corr_type}_t-val':
             cmap = 'Spectral'
             norm = colors.TwoSlopeNorm(vmin=-max(abs(X)), vmax=max(abs(X)), vcenter=0)
+            X_max = None
         elif X_name == 'coreness_thr_mean_syn' or X_name == 'coreness_thr_mean_ctr':
-            cmap_colors = ['#FF4A37', '#007BC4']
-            cmap = mcolors.LinearSegmentedColormap.from_list('RdBl', cmap_colors, N=2)
-            bounds = [min(X), 0.5, max(X)]
-            norm = mcolors.BoundaryNorm(bounds, cmap.N)
+            cmap_colors = ['#203FB6', '#008AFB', '#B3D4FF', 'white', '#FFEC4A', '#FF6611', '#F62336']
+            positions = np.linspace(0, 1, len(cmap_colors))
+            cmap = LinearSegmentedColormap.from_list('custom_colormap', list(zip(positions, cmap_colors)))
+            norm = plt.Normalize(vmin=0, vmax=1)
+            X_max = np.max([Xnet_syn_mean, Xnet_ctr_mean])
         else:
             norm = plt.Normalize(vmin=X.min(), vmax=X.max())
+            X_max = None
         kwargs = {"norm": norm}
 
         # Plot and generate scatter info to plot in matlab
-        fig, ax, scatter, cbar = plot_3d_local_metric(X, xyz, n_name, cmap=cmap, return_scatter=True, **kwargs)
+        fig, ax, scatter, cbar = plot_3d_local_metric(X, xyz, n_name, cmap=cmap, X_norm_by_max=X_max,
+                                                      return_scatter=True, **kwargs)
         # plt.savefig(os.path.join(os.getcwd(), 'plots', f'{X_name}.png'), transparent=True)
         plt.show()
 
