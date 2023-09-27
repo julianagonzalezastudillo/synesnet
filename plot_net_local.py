@@ -10,7 +10,6 @@ from statsmodels.stats.multitest import multipletests
 import statsmodels
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
-import matplotlib.colors as mcolors
 from matplotlib.colors import LinearSegmentedColormap
 from os import path
 import sys
@@ -42,7 +41,7 @@ metric_list = ['coreness']
 # ['coreness']
 # ['coreness_norm']  # ['strength', 'coreness_norm_strength_selection']
 # ['coreness_norm_by_rand_conserve_strenght_distribution']
-cmap = 'Spectral'
+cmap = plt.colormaps['Spectral'].reversed()
 
 if SELECTION:
     p_val_type = 'p-val_corrected'
@@ -151,11 +150,12 @@ for net_key in metric_list:
 
         # Colormap for t-val
         if X_name == f'{net_key}{corr_type}_t-val':
-            cmap = 'Spectral'
+            cmap = plt.colormaps['Spectral'].reversed()
             norm = colors.TwoSlopeNorm(vmin=-max(abs(X)), vmax=max(abs(X)), vcenter=0)
             X_max = None
         elif X_name == 'coreness_thr_mean_syn' or X_name == 'coreness_thr_mean_ctr':
-            cmap_colors = ['#203FB6', '#008AFB', '#B3D4FF', 'white', '#FFEC4A', '#FF6611', '#F62336']
+            # cmap_colors = ['#203FB6', '#008AFB', '#B3D4FF', 'white', '#FFEC4A', '#FF6611', '#F62336']
+            cmap_colors = ['#11205E', '#203FB6', '#86CAFF', 'white', '#FFEC4A', '#F62336', '#80121B']
             positions = np.linspace(0, 1, len(cmap_colors))
             cmap = LinearSegmentedColormap.from_list('custom_colormap', list(zip(positions, cmap_colors)))
             norm = plt.Normalize(vmin=0, vmax=1)
@@ -196,6 +196,7 @@ for net_key in metric_list:
 
             nodes_file = os.path.join(os.getcwd(), 'plots', 'glb', f'{X_name}_{side}.mat')
             sio.savemat(nodes_file, Xvalues)
+            print(nodes_file)
 
         #TODO save colorbar
         # cmap = cbar.cmap
@@ -224,5 +225,5 @@ Xvalues = {'Xnet': X_,
            'names': np.array(n_name)[selection],  # to mention only the significant nodes
            'names_idx': np.nonzero(X_)
            }
-nodes_file = os.path.join(os.getcwd(), 'plots', 'glb', 'literature.mat')
+# nodes_file = os.path.join(os.getcwd(), 'plots', 'glb', 'literature.mat')
 # sio.savemat(nodes_file, Xvalues)
