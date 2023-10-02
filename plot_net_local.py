@@ -41,6 +41,7 @@ metric_list = ['coreness']
 # ['coreness']
 # ['coreness_norm']  # ['strength', 'coreness_norm_strength_selection']
 # ['coreness_norm_by_rand_conserve_strenght_distribution']
+binarize_coreness_size = True
 cmap = plt.colormaps['Spectral'].reversed()
 
 if SELECTION:
@@ -52,7 +53,7 @@ else:
 num_sub = len(os.listdir(os.path.join(path, 'symetrical_corr_mat')))
 
 # nodes positions
-xyz = io.loadmat(results_file)['xyz'][0][:-1]
+xyz = io.loadmat(results_file)['xyz'][0][:-1] 
 xyz = np.array([x[0] for x in xyz])
 
 # nodes names
@@ -166,7 +167,11 @@ for net_key in metric_list:
         kwargs = {"norm": norm}
 
         # Plot and generate scatter info to plot in matlab
-        fig, ax, scatter, cbar = plot_3d_local_metric(X, xyz, n_name, cmap=cmap, X_norm_by_max=X_max,
+        if X_max is None:
+            X_size = abs(pow(X, 2) / max(abs(pow(X, 2)))) * 80
+        else:
+            X_size = abs(pow(X, 2) / pow(X_max, 2)) * 80
+        fig, ax, scatter, cbar = plot_3d_local_metric(X_size, X, xyz, n_name, cmap=cmap,
                                                       return_scatter=True, **kwargs)
         # plt.savefig(os.path.join(os.getcwd(), 'plots', f'{X_name}.png'), transparent=True)
         plt.show()
