@@ -1,4 +1,4 @@
-function nodes = generate_nodes(Xradius, xyz, maxRadius, minRadius, color, distance_factor, binsize, varargin)
+function nodes = generate_nodes(Xradius, xyz, maxRadius, minRadius, color, distance_factor, sizeType, varargin)
     
     % Initialize an empty vector for storing x positions
     xVector = [];
@@ -26,16 +26,21 @@ function nodes = generate_nodes(Xradius, xyz, maxRadius, minRadius, color, dista
     nodes.colors = [];
     nodes.xyz = [];
     
-    % Min-max normalization of sphere sizes
-    % Xradius = ones(1, 246) - 0.6
-    normalizedRadius = (Xradius - min(abs(Xradius))) ./ (max(abs(Xradius)) - min(abs(Xradius))) .* (maxRadius - minRadius) + minRadius;
     
-    % Binarize size
-    if binsize
+    if strcmp(sizeType, 'unique') % Unique sphere suze 
+        ind = Xradius > 0;
+        normalizedRadius = zeros(size(Xradius));
+        normalizedRadius(ind) = maxRadius;
+
+    elseif strcmp(sizeType, 'binarize') % Binarize sphere size
         indCore = Xradius > 0.5;
         indPeriph = Xradius > 0 & Xradius <= 0.5;
         normalizedRadius(indCore) = maxRadius;
         normalizedRadius(indPeriph) = maxRadius/2;   
+
+    else % normalizeSize, Min-max normalization of sphere sizes
+        % Xradius = ones(1, 246) - 0.6
+        normalizedRadius = (Xradius - min(abs(Xradius))) ./ (max(abs(Xradius)) - min(abs(Xradius))) .* (maxRadius - minRadius) + minRadius;
     end
 
     % Put all minRadius to 0

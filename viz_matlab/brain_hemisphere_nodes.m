@@ -8,12 +8,12 @@ sides = {'lh', 'rh'};
 load('brain_surface.mat');
 
 % Define node generation constants
-range_shading_brain = [0.5 1];
+range_shading_brain = [0.6 1];
 range_shading_nodes = [0 1];
 distance_factor = 1.1;
 sphere_maxRadius = 5;
 sphere_minRadius = 1; % 0.4;
-binsize = false;
+sizeType = 'unique';
 
 % load nodes
 addpath('/Users/juliana.gonzalez/ownCloud/github/synesnet/plots/glb/')
@@ -34,7 +34,7 @@ for i = 1:length(sides)
     names_idx_ = names_idx +1; % beacuse it comes from python
     
     % generate spheres
-    nodes_h = generate_nodes(Xnet, xyz, sphere_maxRadius, sphere_minRadius, color, distance_factor, binsize);
+    nodes_h = generate_nodes(Xnet, xyz, sphere_maxRadius, sphere_minRadius, color, distance_factor, sizeType);
     
     % plot hemisphere
     hemisphereVerticesIdx = hemisphereSurface.hemisphereVerticesIdx;
@@ -53,7 +53,7 @@ for i = 1:length(sides)
     
     % to center brain and nodes
     load(append(file_name, '.mat'));
-    nodes = generate_nodes(Xnet, xyz, sphere_maxRadius, sphere_minRadius, color, distance_factor, binsize);
+    nodes = generate_nodes(Xnet, xyz, sphere_maxRadius, sphere_minRadius, color, distance_factor, sizeType);
     
     nodes_h.vertices = nodes_h.vertices - ones(size(nodes_h.vertices , 1) ,1)* mean(nodes.vertices);
     

@@ -2,17 +2,17 @@ clear
 
 % Parameters 
 aa = 0.1;
-range_shading_brain = [0.5 1];
+range_shading_brain = [0.6 1];
 range_shading_nodes = [0 1];
 distance_factor = 1.05;
-binsize = false;
+sizeType = 'unique';
 
 % load brain
 load('brain_surface.mat');
 
 % load nodes
 addpath('/Users/juliana.gonzalez/ownCloud/github/synesnet/plots/glb/')
-nodes_file = 'coreness_thr_mean_syn_selection.mat';
+nodes_file = 'coreness_thr_mean_ctr_selection.mat';
 
 load(nodes_file);
 
@@ -23,9 +23,9 @@ names = regexprep(names, '\s', ''); % Remove spaces using regular expression
 names_idx = names_idx +1; % beacuse it comes from python
 
 % generate spheres
-sphere_maxRadius = 5;
-sphere_minRadius = 1;
-nodes = generate_nodes(Xnet, xyz, sphere_maxRadius, sphere_minRadius, color, distance_factor, binsize);
+sphere_maxRadius = 5.1;
+sphere_minRadius = 5;
+nodes = generate_nodes(Xnet, xyz, sphere_maxRadius, sphere_minRadius, color, distance_factor, sizeType);
 nodes.vertices = nodes.vertices - ones(size(nodes.vertices , 1) ,1) * mean(nodes.vertices);
 nodes.vertices(:,2) = nodes.vertices(:,2) + 6;
 nodes.vertices(:,3) = nodes.vertices(:,3) - 3;
