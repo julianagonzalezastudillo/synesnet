@@ -37,11 +37,10 @@ coreness_stat_file = os.path.join(os.getcwd(), 'plots', 'glb', 'coreness_norm_by
 P_VAL = 0.05
 SELECTION = True  # True: select base on strength significance
 corr_type = '_thr'
-metric_list = ['coreness']
+metric_list = ['coreness_norm_by_rand_conserve_strenght_distribution']
 # ['coreness']
 # ['coreness_norm']  # ['strength', 'coreness_norm_strength_selection']
 # ['coreness_norm_by_rand_conserve_strenght_distribution']
-binarize_coreness_size = True
 cmap = plt.colormaps['Spectral'].reversed()
 
 if SELECTION:
@@ -53,7 +52,7 @@ else:
 num_sub = len(os.listdir(os.path.join(path, 'symetrical_corr_mat')))
 
 # nodes positions
-xyz = io.loadmat(results_file)['xyz'][0][:-1] 
+xyz = io.loadmat(results_file)['xyz'][0][:-1]
 xyz = np.array([x[0] for x in xyz])
 
 # nodes names
@@ -75,6 +74,8 @@ for net_key in metric_list:
         coreness_stat = io.loadmat(coreness_stat_file)
         idx_select_coreness = coreness_stat['names_idx'][0]
         idx_select = list(set(idx_select) & set(idx_select_coreness))
+    elif net_key == 'strength':
+        idx_select = slice(None)
 
     # Load net metrics for all subjects
     Xnet = load_net_metrics(net_path, net_key, corr_type, num_sub, idx_select)
@@ -116,6 +117,7 @@ for net_key in metric_list:
     pd.set_option("display.precision", 2)
     df = pd.DataFrame({'node': np.array(n_name)[idx_select],
                        'node_complete': np.array(n_name_full)[idx_select],
+                       'node_idx': idx_select,
                        f'{net_key}_synes': Xnet_syn.mean(axis=0)[idx_select],
                        f'{net_key}_ctr': Xnet_ctr.mean(axis=0)[idx_select],
                        't-val': np.array(t_val)[idx_select],
@@ -173,7 +175,7 @@ for net_key in metric_list:
             X_size = abs(pow(X, 2) / pow(X_max, 2)) * 80
         fig, ax, scatter, cbar = plot_3d_local_metric(X_size, X, xyz, n_name, cmap=cmap,
                                                       return_scatter=True, **kwargs)
-        # plt.savefig(os.path.join(os.getcwd(), 'plots', f'{X_name}.png'), transparent=True)
+        plt.savefig(os.path.join(os.getcwd(), 'plots', f'{X_name}.png'), transparent=True)
         plt.show()
 
         cmap = scatter.get_cmap()
@@ -202,6 +204,24 @@ for net_key in metric_list:
             nodes_file = os.path.join(os.getcwd(), 'plots', 'glb', f'{X_name}_{side}.mat')
             sio.savemat(nodes_file, Xvalues)
             print(nodes_file)
+
+        # Create numeric references for selected nodes (strength + coreness)
+        if net_key == 'coreness_norm_by_rand_conserve_strenght_distribution'\
+                and SELECTION:
+            df_sorted = df.sort_values(by='p-val_corrected').reset_index(drop=True)
+            df_sorted['Order'] = df_sorted.index + 1  # +1 to start indexing from 1
+
+            # for each hemisphere individually
+            for ind, side in zip([lh_ind, rh_ind], ('lh', 'rh')):
+                mask = (np.array(df_sorted["node_idx"]) > ind[0]) & (np.array(df_sorted["node_idx"]) < ind[-1])
+                Xvalues = {'Xnet': np.zeros(np.shape(X))[ind],
+                           'xyz': xyz[ind],
+                           'color': rgb_values[ind],
+                           'names': list(df_sorted["Order"][mask]),
+                           'names_idx': list(df_sorted["node_idx"][mask] - ind[0])
+                           }
+                nodes_file = os.path.join(os.getcwd(), 'plots', 'glb', f'reference_numbers_{side}.mat')
+                sio.savemat(nodes_file, Xvalues)
 
         #TODO save colorbar
         # cmap = cbar.cmap
