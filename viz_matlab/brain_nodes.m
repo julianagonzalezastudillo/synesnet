@@ -23,8 +23,8 @@ names = regexprep(names, '\s', ''); % Remove spaces using regular expression
 names_idx = names_idx +1; % beacuse it comes from python
 
 % generate spheres
-sphere_maxRadius = 5.1;
-sphere_minRadius = 5;
+sphere_maxRadius = 5;
+sphere_minRadius = 2;
 nodes = generate_nodes(Xnet, xyz, sphere_maxRadius, sphere_minRadius, color, distance_factor, sizeType);
 nodes.vertices = nodes.vertices - ones(size(nodes.vertices , 1) ,1) * mean(nodes.vertices);
 nodes.vertices(:,2) = nodes.vertices(:,2) + 6;
@@ -88,4 +88,3 @@ zlabel('Z');
 grid off
 axis off
 % view(0, 90);
-

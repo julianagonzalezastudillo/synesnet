@@ -86,13 +86,5 @@ function nodes = generate_nodes(Xradius, xyz, maxRadius, minRadius, color, dista
     end
     
     % Save nodes to .mat file
-    save('sphere_nodes.mat', 'nodes');
+    % save('sphere_nodes.mat', 'nodes');
     
-    % Plot the spheres
-    % figure;
-    % trisurf(nodes.indices, nodes.vertices(:, 1), nodes.vertices(:, 2), nodes.vertices(:, 3));
-    % axis equal;
-    % xlabel('X');
-    % ylabel('Y');
-    % zlabel('Z');
-    % title('Spheres');

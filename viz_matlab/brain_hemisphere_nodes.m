@@ -12,7 +12,7 @@ range_shading_brain = [0.6 1];
 range_shading_nodes = [0 1];
 distance_factor = 1.1;
 sphere_maxRadius = 5;
-sphere_minRadius = 1; % 0.4;
+sphere_minRadius = 2;
 sizeType = 'unique';
 
 % load nodes
@@ -68,23 +68,26 @@ for i = 1:length(sides)
     figure;
     fig = gcf; % Get the current figure handle
     
+    % brain
     trisurf(hemisphere.faces,hemisphere.vertices(:,1),hemisphere.vertices(:,2), ...
         hemisphere.vertices(:,3),'edgecolor','none', 'FaceLighting', 'gouraud', ...
         'AmbientStrength', 0.5, 'FaceVertexCData', hemisphere.color, ...
         'FaceAlpha',.75);
     hold on
+
+    % nodes
     trisurf(nodes_h.indices , ...
         nodes_h.vertices(:,1),nodes_h.vertices(:,2),nodes_h.vertices(:,3), ...
         'edgecolor','none', 'FaceLighting', 'gouraud', 'AmbientStrength', 0.5, ...
         'FaceVertexCData', nodes_h.colors);
     
     % Add label names
-    for i = 1:size(names_,1)
+    for i = 1:length(names_)
         % offset = i * 2 * maxRadius;
         label = sprintf(names_(i));
-        % text(nodes_h.xyz(names_idx_(i), 1) -5, ...
-        %      nodes_h.xyz(names_idx_(i), 2) +5, ...
-        %      nodes_h.xyz(names_idx_(i), 3) +5, label, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 10, 'FontWeight', 'bold');
+        % text(nodes_h.xyz(names_idx_(i), 1), ...
+        %     nodes_h.xyz(names_idx_(i), 2) +6, ...
+        %     nodes_h.xyz(names_idx_(i), 3) -3, label, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 12, 'FontWeight', 'bold');
     end
     
     % Set the desired figure size
