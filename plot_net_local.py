@@ -213,7 +213,7 @@ for net_key in metric_list:
 
             # for each hemisphere individually
             for ind, side in zip([lh_ind, rh_ind], ('lh', 'rh')):
-                mask = (np.array(df_sorted["node_idx"]) > ind[0]) & (np.array(df_sorted["node_idx"]) < ind[-1])
+                mask = (np.array(df_sorted["node_idx"]) >= ind[0]) & (np.array(df_sorted["node_idx"]) < ind[-1])
                 Xvalues = {'Xnet': np.zeros(np.shape(X))[ind],
                            'xyz': xyz[ind],
                            'color': rgb_values[ind],
