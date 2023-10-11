@@ -15,15 +15,7 @@ from os import path
 import sys
 sys.path.append(path.abspath('../netviz'))
 from viz.netlocal import plot_3d_local_metric
-
-
-def load_net_metrics(net_path, net_key, corr_type, num_sub, idx_select):
-    Xnet = np.array([
-        io.loadmat(os.path.join(net_path, f'net_metrics_Subject{str(sub).zfill(3)}{corr_type}'))[net_key][0]
-        for sub in range(1, num_sub + 1)])
-    X_ = np.zeros([np.shape(Xnet)[0], len(n_name)])
-    X_[:, idx_select] = Xnet[:, idx_select]
-    return X_
+from tools import load_net_metrics
 
 
 path = '/Users/juliana.gonzalez/ownCloud/graph_analysis/'
