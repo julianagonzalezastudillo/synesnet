@@ -27,6 +27,8 @@ Xnet = load_net_metrics(net_path, "coreness", corr_type, num_sub, slice(None))  
 
 # Split synesthetic and control subjects
 # Xnet[np.isnan(Xnet) | np.isinf(Xnet)] = 0
+Xnet_syn = Xnet[:17, :]
+Xnet_ctr = Xnet[17:, :]
 Xnet_syn_mean = Xnet[:17, :].mean(axis=0)
 Xnet_ctr_mean = Xnet[17:, :].mean(axis=0)
 
@@ -48,8 +50,19 @@ for sub in np.arange(num_sub)+1:
 
 # Reshape all matrices
 Xfc_all = np.concatenate([mat.reshape(1, *np.shape(Xfc_thr)) for mat in Xfc_all], axis=0)
+Xfc_syn = Xfc_all[:17]
+Xfc_ctr = Xfc_all[17:]
 Xfc_syn_mean = Xfc_all[:17].mean(axis=0)
 Xfc_ctr_mean = Xfc_all[17:].mean(axis=0)
+
+# mean excluding zero
+Xfc_syn_sum_along_axis0 = np.sum(Xfc_syn, axis=0)
+Xfc_syn_non_zero_count = np.count_nonzero(Xfc_syn, axis=0)
+Xfc_syn_mean_non_zero = np.divide(Xfc_syn_sum_along_axis0, Xfc_syn_non_zero_count, where=Xfc_syn_non_zero_count != 0)
+
+Xfc_ctr_sum_along_axis0 = np.sum(Xfc_ctr, axis=0)
+Xfc_ctr_non_zero_count = np.count_nonzero(Xfc_ctr, axis=0)
+Xfc_ctr_mean_non_zero = np.divide(Xfc_ctr_sum_along_axis0, Xfc_ctr_non_zero_count, where=Xfc_ctr_non_zero_count != 0)
 
 
 for Xnet_mean, Xfc_mean, plot_name in zip([Xnet_syn_mean, Xnet_ctr_mean], [Xfc_syn_mean, Xfc_ctr_mean], ["SYN", "CTR"]):
@@ -60,20 +73,25 @@ for Xnet_mean, Xfc_mean, plot_name in zip([Xnet_syn_mean, Xnet_ctr_mean], [Xfc_s
             node_idx = idx_select[row * 3 + col]
 
             # Scatter plot
-            axs[row, col].scatter(Xnet_mean, Xfc_mean[node_idx], alpha=0.5)
+            idx_non_zero = np.where(Xfc_mean[node_idx] != 0)
+            # axs[row, col].scatter(Xnet_mean, Xfc_[:, node_idx, :], alpha=0.5)
+            x = Xnet_mean[idx_non_zero]
+            y = Xfc_mean[node_idx][idx_non_zero]
+            axs[row, col].scatter(x, y, alpha=0.5)
 
             # Calculate the correlation coefficient
-            correlation = np.corrcoef(Xnet_mean, Xfc_mean[node_idx])[0, 1]
+            correlation = np.corrcoef(x, y)[0, 1]
 
             # Create a correlation line
-            fit = np.polyfit(Xnet_mean, Xfc_mean[node_idx], 2)
-            coefficients = np.polyfit(Xnet_mean, Xfc_mean[node_idx], 2)
+            fit = np.polyfit(x, y, 2)
+            coefficients = np.polyfit(x, y, 2)
             correlation_line = np.poly1d(fit)
 
             # Plot the correlation line
             # axs[row, col].plot(Xnet_mean, correlation_line(Xnet_mean), color='red',
             #                    label=f'Correlation Line (r = {correlation:.2f})')
-            axs[row, col].plot(np.sort(Xnet_mean), correlation_line(np.sort(Xnet_mean)), label='Quadratic Fit', color='red')
+            axs[row, col].plot(np.sort(x), correlation_line(np.sort(x)),
+                               label=f'(r = {correlation:.2f})', color='red')
 
             # Set labels and title
             axs[row, col].set_xlabel('coreness')
@@ -81,7 +99,7 @@ for Xnet_mean, Xfc_mean, plot_name in zip([Xnet_syn_mean, Xnet_ctr_mean], [Xfc_s
             axs[row, col].set_title(f'{n_name_full[node_idx]}, C={Xnet_mean[node_idx]:.2f}')
 
             # Add a legend
-            # axs[row, col].legend()
+            axs[row, col].legend()
 
     fig.suptitle(f"{plot_name}", fontsize=16)
     plt.tight_layout()
@@ -89,6 +107,44 @@ for Xnet_mean, Xfc_mean, plot_name in zip([Xnet_syn_mean, Xnet_ctr_mean], [Xfc_s
     # Show the subplots
     plt.show()
 
+#
+# #%% save matrices for plot
+# import scipy.io as sio
+# from viz.netlocal import plot_3d_local_metric
+#
+#
+# results_file = os.path.join(path, 'resultsROI_Subject001_Condition001.mat')
+#
+# # nodes positions
+# xyz = io.loadmat(results_file)['xyz'][0][:-1]
+# xyz = np.array([x[0] for x in xyz])
+#
+# Xfc = Xfc_syn_mean[idx_select] - Xfc_ctr_mean[idx_select]
+# Xfc_max = np.max(Xfc)
+# Xfc_min = np.min(Xfc)
+#
+# cmap = "hsv"
+# norm = plt.Normalize(vmin=Xfc_min, vmax=Xfc_max)
+# kwargs = {"norm": norm}
+# for X, node_idx in zip(Xfc, idx_select):
+#     X_size = abs(pow(X, 2) / max(abs(pow(X, 2)))) * 80
+#
+#     fig, ax, scatter, cbar = plot_3d_local_metric(X_size, X, xyz, n_name, cmap=cmap, return_scatter=True, **kwargs)
+#     plt.show()
+#
+#     cmap = scatter.get_cmap()
+#     rgb_values = cmap(norm(X))
+#
+#     # file_name = f"{node_idx}_Xfc_mean.mat"
+#     file_name = f"Xfc_mean.mat"
+#     X_ = {'Xnet': X,
+#            'xyz': xyz,
+#            'color': rgb_values,
+#            'names': np.array(n_name),  # to mention only the significant nodes
+#            'names_idx': np.nonzero(X)
+#            }
+#     sio.savemat(file_name, X_)
+#     print(f"{node_idx}: {n_name_full[node_idx]}")
 
 
 
