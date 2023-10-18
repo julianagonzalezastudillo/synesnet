@@ -16,18 +16,18 @@ results_file = os.path.join(path, 'resultsROI_Subject001_Condition001.mat')
 
 
 def load_net_metrics(net_path, metric, corr_type, num_sub, idx_select):
-    Xnet = np.array([
+    xnet = np.array([
         io.loadmat(os.path.join(net_path, f'net_metrics_Subject{str(sub).zfill(3)}{corr_type}'))[metric][0]
         for sub in range(1, num_sub + 1)])
-    X_ = np.zeros(np.shape(Xnet))
-    X_[:, idx_select] = Xnet[:, idx_select]
-    return X_
+    x_ = np.zeros(np.shape(xnet))
+    x_[:, idx_select] = xnet[:, idx_select]
+    return x_
 
 
 def load_fc():
     # Load all connectivity matrices
     num_sub = len(os.listdir(os.path.join(path, 'symetrical_corr_mat')))
-    Xfc_all = []
+    fc_all = []
     for sub in np.arange(num_sub) + 1:
         # load correlation
         sub_file = 'CorrMatrix_Subject{0}.mat'.format(str(sub).zfill(3))
@@ -35,17 +35,17 @@ def load_fc():
         fc = io.loadmat(fc_file)
 
         # 3. corr[corr>=0] = [0, 1]  # winning matrices !!!
-        Xfc_thr = deepcopy(fc['CorrMatrix'])
-        Xfc_thr[Xfc_thr <= 0] = 0
-        np.fill_diagonal(Xfc_thr, 0)
+        fc_thr = deepcopy(fc['CorrMatrix'])
+        fc_thr[fc_thr <= 0] = 0
+        np.fill_diagonal(fc_thr, 0)
 
         # Append matrices
-        Xfc_all.append(Xfc_thr)
+        fc_all.append(fc_thr)
 
-    Xfc_syn = np.array(Xfc_all[:17])
-    Xfc_ctr = np.array(Xfc_all[17:])
+    fc_syn = np.array(fc_all[:17])
+    fc_ctr = np.array(fc_all[17:])
 
-    return Xfc_syn, Xfc_ctr
+    return fc_syn, fc_ctr
 
 
 def load_node_names():
