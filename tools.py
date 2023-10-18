@@ -1,3 +1,10 @@
+"""
+=================================
+            SYNESNET
+=================================
+This module is design to load data.
+"""
+
 from copy import deepcopy
 import numpy as np
 import os.path
