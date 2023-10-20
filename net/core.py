@@ -2,7 +2,7 @@
 =================================
         Core - Periphery
 =================================
-This module is design to compute coreness
+This module is design to compute coreness in weighted networks, using strength as richness metric.
 
    References:
 
@@ -12,6 +12,7 @@ This module is design to compute coreness
        doi: 10.1098/rsif.2018.0514. PMID: 30209045; PMCID: PMC6170773.
 """
 import numpy as np
+import matplotlib.pyplot as plt
 import bct
 
 
@@ -32,14 +33,30 @@ def coreness(X):
 
     N = np.shape(X)[0]
 
+    # Density max
+    m = np.count_nonzero(X)
+    if m == 0 or N <= 1:
+        d_max = 0
+    else:
+        d_max = m / (N * (N - 1))
+
     # Density thresholds
     THRESHOLDS = np.arange(1, N) / (N - 1)
-    isCore = np.empty((N, len(THRESHOLDS)))
+
+    # Check to use total number of links
+    thr_idx = np.where(THRESHOLDS <= d_max)[0]
+    L = np.count_nonzero(bct.threshold_proportional(X, THRESHOLDS[thr_idx[-1]]))
+    if L < np.count_nonzero(X):
+        thr_idx = np.append(thr_idx, thr_idx[-1] + 1)
+
+    thr = THRESHOLDS[thr_idx]
+
+    isCore = np.empty((N, len(thr)))
     isCore[:] = np.nan
 
-    for iThresh in np.arange(len(THRESHOLDS)):
+    for iThresh, Thresh in enumerate(thr):
         # threshold the weighted network by the matching density network
-        T = bct.threshold_proportional(X, THRESHOLDS[iThresh])
+        T = bct.threshold_proportional(X, Thresh)
 
         # normalize min-max
         T = normalize(T)
@@ -96,6 +113,11 @@ def coreperiphery(X):
     isCore = np.zeros(N)
     isCore[rankingInd[0: rankOfMaxkPlus + 1]] = 1
     isCore = isCore.astype(bool)
+
+    plot_rank = False
+    if plot_rank:
+        plot_core_periphery(X, kPlus, rankOfMaxkPlus, rankingInd)
+
     return isCore
 
 
@@ -139,3 +161,40 @@ def richness(A):
         kPlus[i] = kPlusForI[i]  # richness of node i towards richer nodes
 
     return k, kMinus, kPlus
+
+
+def plot_core_periphery(X, kPlus, rankOfMaxkPlus, rankingInd):
+    """
+    Plot k+ as a function of rank_i
+
+    :param X:
+    :param kPlus:
+    :param rankOfMaxkPlus:
+    :param rankingInd:
+    :return:
+    """
+
+    N = np.shape(X)[0]
+    density = (np.count_nonzero(X)) / (N*(N-1))
+
+    k7 = 100/(N-1)
+    if density < round(k7, 4):
+        fig = plt.figure(figsize=(12, 6), dpi=100)
+        plt.axvline(x=rankOfMaxkPlus, color='grey', linestyle='--', linewidth=4)
+        plt.plot(np.arange(rankOfMaxkPlus, N), kPlus[rankingInd[rankOfMaxkPlus:]] / np.max(kPlus),
+                 color='#203FB6', linewidth=4)
+        plt.plot(np.arange(0, rankOfMaxkPlus + 1), kPlus[rankingInd[:rankOfMaxkPlus + 1]] / np.max(kPlus),
+                 color='#F62336', linewidth=4)
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        plt.ylim(0, 1)
+        plt.xlim(0, len(kPlus))
+
+        plt.gca().spines['top'].set_visible(False)
+        plt.gca().spines['right'].set_visible(False)
+        plt.gca().spines['bottom'].set_visible(True)
+        plt.gca().spines['left'].set_visible(True)
+        L = np.count_nonzero(X)
+        plot_name = f'plots/core-periphery/rank_k+_{str(L).zfill(6)}.png'
+        plt.savefig(plot_name, bbox_inches='tight', pad_inches=0, dpi=300, transparent=True)
+        plt.show()
