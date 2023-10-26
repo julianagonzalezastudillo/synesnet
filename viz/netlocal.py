@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 
 
-def plot_3d_local_metric(S, C, xyz, n_name, cmap='RdYlBu', return_scatter=False, **kwargs):
+def plot_3d_local_metric(S, C, xyz, n_name, cmap=None, return_scatter=False, **kwargs):
     """
     Generate a 3D scatter plot with variable point sizes and colors.
 
@@ -12,6 +13,12 @@ def plot_3d_local_metric(S, C, xyz, n_name, cmap='RdYlBu', return_scatter=False,
         n_names: list of strings representing the names of each point
         cmap: colormap to use (default is 'RdYlBu')
     """
+
+    # Define colormap
+    if cmap is None:
+        cmap_colors = ['#11205E', '#203FB6', '#86CAFF', 'white', '#FFEC4A', '#F62336', '#80121B']
+        positions = np.linspace(0, 1, len(cmap_colors))
+        cmap = LinearSegmentedColormap.from_list('custom_colormap', list(zip(positions, cmap_colors)))
 
     fig = plt.figure(figsize=(8, 8), dpi=400)
     ax = fig.add_subplot(111, projection='3d')
