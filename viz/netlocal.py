@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib import font_manager
 
 
 def plot_3d_local_metric(S, C, xyz, n_name, cmap=None, return_scatter=False, **kwargs):
@@ -46,11 +47,17 @@ def plot_3d_local_metric(S, C, xyz, n_name, cmap=None, return_scatter=False, **k
     cbar_ax = fig.add_axes([0.83, 0.25, 0.03, 0.5])
 
     # Add a colorbar to the plot
+    font = font_manager.FontProperties(family='Arial', style='normal', size=18)
     cbar = fig.colorbar(scatter, cax=cbar_ax, )
-    cbar.ax.tick_params(labelsize=10)
+    cbar.ax.set_yticklabels(cbar.ax.get_yticklabels(), fontproperties=font)
+
+    # Set the line width of y-tick lines
+    for line in cbar.ax.yaxis.get_ticklines():
+        line.set_markeredgewidth(1.5)  # Adjust the width as needed
+
     cbar.outline.set_visible(False)
-    cbar.ax.tick_params(labelsize=8)
     fig.tight_layout()
+
     # Set the title of the plot
     # title = ax.set_title( '{0}{1}'.format( X_name, corr_type), fontsize=10)
     # title.set_position( [0.5, -0.9] )

@@ -27,7 +27,7 @@ function nodes = generate_nodes(Xradius, xyz, maxRadius, minRadius, color, dista
     nodes.xyz = [];
     
     
-    if strcmp(sizeType, 'unique') % Unique sphere suze 
+    if strcmp(sizeType, 'unique') % Unique sphere size 
         ind = Xradius > 0;
         normalizedRadius = zeros(size(Xradius));
         normalizedRadius(ind) = maxRadius;
@@ -40,11 +40,13 @@ function nodes = generate_nodes(Xradius, xyz, maxRadius, minRadius, color, dista
 
     else % normalizeSize, Min-max normalization of sphere sizes
         % Xradius = ones(1, 246) - 0.6
+        Xradius = abs(Xradius);
         normalizedRadius = (Xradius - min(abs(Xradius))) ./ (max(abs(Xradius)) - min(abs(Xradius))) .* (maxRadius - minRadius) + minRadius;
     end
 
     % Put all minRadius to 0
-    normalizedRadius(normalizedRadius <= minRadius) = 0;
+    ind_zero = Xradius == 0;
+    normalizedRadius(ind_zero) = 0;
 
     % Generate spheres
     for i = 1:numSpheres
