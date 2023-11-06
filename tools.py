@@ -14,14 +14,27 @@ path = '/Users/juliana.gonzalez/ownCloud/graph_analysis/'
 node_file = os.path.join(path, 'BN_Atlas_246_LUT_reoriented.txt')
 results_file = os.path.join(path, 'resultsROI_Subject001_Condition001.mat')
 
+# number of subjects
+num_sub = len(os.listdir(os.path.join(path, 'symetrical_corr_mat')))
 
-def load_net_metrics(net_path, metric, corr_type, num_sub, idx_select):
+
+def load_net_metrics(net_path, metric, corr_type='_thr', num_sub=num_sub, idx_select=slice(None)):
     xnet = np.array([
         io.loadmat(os.path.join(net_path, f'net_metrics_Subject{str(sub).zfill(3)}{corr_type}'))[metric][0]
         for sub in range(1, num_sub + 1)])
-    x_ = np.zeros(np.shape(xnet))
-    x_[:, idx_select] = xnet[:, idx_select]
-    return x_
+
+    # Create an empty matrix of subjects and nodes and replace the significant nodes with its values
+    x = np.zeros(np.shape(xnet))
+    x[:, idx_select] = xnet[:, idx_select]
+
+    # Put inf and nan values to zero
+    x[np.isnan(x) | np.isinf(x)] = 0
+
+    # Split synesthetic and control subjects
+    x_syn = x[:17, :]
+    x_ctr = x[17:, :]
+
+    return x_syn, x_ctr
 
 
 def load_fc():
@@ -42,6 +55,7 @@ def load_fc():
         # Append matrices
         fc_all.append(fc_thr)
 
+    # Split synesthetic and control subjects
     fc_syn = np.array(fc_all[:17])
     fc_ctr = np.array(fc_all[17:])
 
