@@ -8,7 +8,6 @@ results in .png and also save for complementary 3D oplot in matlab
 
 import os.path
 import numpy as np
-from scipy import io
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from os import path
