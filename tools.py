@@ -9,6 +9,7 @@ from copy import deepcopy
 import numpy as np
 import os.path
 from scipy import io
+import scipy.io as sio
 
 path = '/Users/juliana.gonzalez/ownCloud/graph_analysis/'
 node_file = os.path.join(path, 'BN_Atlas_246_LUT_reoriented.txt')
@@ -78,3 +79,23 @@ def load_xyz():
     xyz = io.loadmat(results_file)['xyz'][0][:-1]
     xyz = np.array([x[0] for x in xyz])
     return xyz
+
+
+def save_mat_file(X, xyz, rgb_values, n_name, X_name, plot_path):
+    # select index for left and right hemisphere
+    lh_ind = [index for index, element in enumerate(np.array(n_name)) if element.endswith('_L')]
+    rh_ind = [index for index, element in enumerate(np.array(n_name)) if element.endswith('_R')]
+
+    for ind, side in zip([lh_ind, rh_ind, range(len(X))], ('_lh', '_rh', '')):
+        Xvalues = {
+            'Xnet': X[ind],
+            'xyz': xyz[ind],
+            'color': rgb_values[ind],
+            'names': np.array(n_name)[np.nonzero(X[ind])[0] + ind[0]],  # to mention only the significant nodes
+            'names_idx': np.nonzero(X[ind])[0]
+        }
+
+        nodes_file = os.path.join(plot_path, f'{X_name}{side}.mat')
+        sio.savemat(nodes_file, Xvalues)
+        print(nodes_file)
+
