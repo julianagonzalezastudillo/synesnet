@@ -7,13 +7,12 @@ Plot coreness results in .png and also save for complementary 3D oplot in matlab
 
 import os.path
 import numpy as np
-from scipy import io
 import matplotlib.pyplot as plt
 from os import path
 import pandas as pd
 import sys
 from viz.netlocal import plot_3d_local_metric
-from tools import load_net_metrics, load_xyz, load_node_names
+from tools import load_net_metrics, load_xyz, load_node_names, save_mat_file
 import seaborn as sns
 from matplotlib.ticker import MaxNLocator
 
@@ -22,11 +21,9 @@ sys.path.append(path.abspath('../netviz'))
 path = '/Users/juliana.gonzalez/ownCloud/graph_analysis/'
 net_path = os.path.join(path, 'net_metrics', 'new')
 plot_path = os.path.join(os.getcwd(), 'plots', 'glb', 'new')
-strength_stat_file = os.path.join(os.getcwd(), 'plots', 'glb', 'strength_thr_t-val.mat')
-coreness_stat_file = os.path.join(plot_path, 'coreness_norm_by_rand_conserve_strenght_distribution_thr_t-val_selection.mat')
 
 # CONSTANTS
-SELECTION = True  # True: select base on strength significance
+SELECTION = False  # True: select base on strength significance
 P_VAL = 0.05
 corr_type = '_thr'
 metric = 'coreness'
@@ -34,10 +31,6 @@ metric = 'coreness'
 # nodes nodes positions and names
 xyz = load_xyz()
 n_name, n_name_full = load_node_names()
-
-# select index for left and right hemisphere
-lh_ind = [index for index, element in enumerate(np.array(n_name)) if element.endswith('_L')]
-rh_ind = [index for index, element in enumerate(np.array(n_name)) if element.endswith('_R')]
 
 if SELECTION:
     # Open strength t-val file
@@ -79,17 +72,7 @@ for X, X_name in zip([Xnet_syn_mean, Xnet_ctr_mean],
 
     # save .mat to plot 3D brain with matlab
     # for each hemisphere individually
-    for ind, side in zip([lh_ind, rh_ind, range(len(X))], ('_lh', '_rh', '')):
-        Xvalues = {'Xnet': X[ind],
-                   'xyz': xyz[ind],
-                   'color': rgb_values[ind],
-                   'names': np.array(n_name)[np.nonzero(X[ind])[0]+ind[0]],  # to mention only the significant nodes
-                   'names_idx': np.nonzero(X[ind])[0]
-                   }
-
-        nodes_file = os.path.join(plot_path, f'{X_name}{side}.mat')
-        # sio.savemat(nodes_file, Xvalues)
-        print(nodes_file)
+    save_mat_file(X, xyz, rgb_values, n_name, X_name, plot_path)
 
 #%% Plot coreness distribution
 fig, ax = plt.subplots(figsize=(7, 6), dpi=300)
