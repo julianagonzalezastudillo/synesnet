@@ -21,7 +21,7 @@ def plot_3d_local_metric(S, C, xyz, n_name, cmap=None, return_scatter=False, **k
         positions = np.linspace(0, 1, len(cmap_colors))
         cmap = LinearSegmentedColormap.from_list('custom_colormap', list(zip(positions, cmap_colors)))
 
-    fig = plt.figure(figsize=(8, 8), dpi=400)
+    fig = plt.figure(figsize=(8, 8), dpi=600)
     ax = fig.add_subplot(111, projection='3d')
 
     x = xyz[:, 0]
