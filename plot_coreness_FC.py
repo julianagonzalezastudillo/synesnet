@@ -1,59 +1,34 @@
 import os.path
-from scipy import io
 import numpy as np
-from copy import deepcopy
-from tools import load_net_metrics
+import pandas as pd
 import matplotlib.pyplot as plt
+from tools import load_fc, load_net_metrics, load_node_names
+
 
 path = '/Users/juliana.gonzalez/ownCloud/graph_analysis/'
-net_path = os.path.join(path, 'net_metrics')
-strength_stat_file = os.path.join(os.getcwd(), 'plots', 'glb', 'strength_thr_t-val.mat')
-node_file = os.path.join(path, 'BN_Atlas_246_LUT_reoriented.txt')
+net_path = os.path.join(path, 'net_metrics', 'new')
 
 corr_type = "_thr"
-num_sub = len(os.listdir(os.path.join(path, 'symetrical_corr_mat')))
-idx_select = [5, 70, 128, 133, 9, 64, 68, 25, 10]  # obtained from previous results
+metric = "coreness"
+P_VAL = 0.05
 
-# nodes names
-n_name, n_name_full = [], []
-with open(node_file, "r") as filestream:
-    for line in filestream:
-        name, name_full = line.split(",")[:2]
-        n_name.append(name)
-        n_name_full.append(name_full.strip())
+# Open stats file
+stats_file = os.path.join(path, 'results', 'stats_results.csv')
+df_stats = pd.read_csv(stats_file)
+idx_select = np.array(df_stats['node_idx'][(df_stats['metric'] == metric) & (df_stats['p-val_corrected'] < P_VAL)])
+
+# nodes positions and names
+n_name, full_n_name = load_node_names()
 
 # Load net metrics for all subjects
-Xnet = load_net_metrics(net_path, "coreness", corr_type, num_sub, slice(None))  # [sub x nodes]
+Xnet_syn, Xnet_ctr = load_net_metrics(net_path, metric, corr_type)  # [sub x nodes]
+Xnet_syn_mean = Xnet_syn.mean(axis=0)
+Xnet_ctr_mean = Xnet_ctr.mean(axis=0)
 
-# Split synesthetic and control subjects
-# Xnet[np.isnan(Xnet) | np.isinf(Xnet)] = 0
-Xnet_syn = Xnet[:17, :]
-Xnet_ctr = Xnet[17:, :]
-Xnet_syn_mean = Xnet[:17, :].mean(axis=0)
-Xnet_ctr_mean = Xnet[17:, :].mean(axis=0)
-
-# Load all connectivity matrices
-Xfc_all = []
-for sub in np.arange(num_sub)+1:
-    # load correlation
-    sub_file = 'CorrMatrix_Subject{0}.mat'.format(str(sub).zfill(3))
-    fc_file = path + 'symetrical_corr_mat/' + sub_file
-    fc = io.loadmat(fc_file)
-
-    # 3. corr[corr>=0] = [0, 1]  # winning matrices !!!
-    Xfc_thr = deepcopy(fc['CorrMatrix'])
-    Xfc_thr[Xfc_thr <= 0] = 0
-    np.fill_diagonal(Xfc_thr, 0)
-
-    # Append matrices
-    Xfc_all.append(Xfc_thr)
-
-# Reshape all matrices
-Xfc_all = np.concatenate([mat.reshape(1, *np.shape(Xfc_thr)) for mat in Xfc_all], axis=0)
-Xfc_syn = Xfc_all[:17]
-Xfc_ctr = Xfc_all[17:]
-Xfc_syn_mean = Xfc_all[:17].mean(axis=0)
-Xfc_ctr_mean = Xfc_all[17:].mean(axis=0)
+# Load connectivity matrices for all subjects
+Xfc_syn, Xfc_ctr = load_fc()
+Xfc_syn_mean = Xfc_syn.mean(axis=0)
+Xfc_ctr_mean = Xfc_ctr.mean(axis=0)
 
 # mean excluding zero
 Xfc_syn_sum_along_axis0 = np.sum(Xfc_syn, axis=0)
@@ -64,42 +39,41 @@ Xfc_ctr_sum_along_axis0 = np.sum(Xfc_ctr, axis=0)
 Xfc_ctr_non_zero_count = np.count_nonzero(Xfc_ctr, axis=0)
 Xfc_ctr_mean_non_zero = np.divide(Xfc_ctr_sum_along_axis0, Xfc_ctr_non_zero_count, where=Xfc_ctr_non_zero_count != 0)
 
-
+ncols = 2
+nrows = 3
 for Xnet_mean, Xfc_mean, plot_name in zip([Xnet_syn_mean, Xnet_ctr_mean], [Xfc_syn_mean, Xfc_ctr_mean], ["SYN", "CTR"]):
-    fig, axs = plt.subplots(3, 3, figsize=(12, 12))
+    fig, axs = plt.subplots(nrows, ncols, figsize=(4 * ncols, 4 * nrows))
     # Loop through node_idx and populate the subplots
-    for row in range(3):
-        for col in range(3):
-            node_idx = idx_select[row * 3 + col]
+    for node_idx, row, col in zip(idx_select, np.sort(np.tile(np.arange(nrows), ncols)),
+                                  np.tile(np.arange(ncols), nrows)):
+        # Scatter plot
+        idx_non_zero = np.where(Xfc_mean[node_idx] != 0)
+        # axs[row, col].scatter(Xnet_mean, Xfc_[:, node_idx, :], alpha=0.5)
+        x = Xnet_mean[idx_non_zero]
+        y = Xfc_mean[node_idx][idx_non_zero]
+        axs[row, col].scatter(x, y, alpha=0.5)
 
-            # Scatter plot
-            idx_non_zero = np.where(Xfc_mean[node_idx] != 0)
-            # axs[row, col].scatter(Xnet_mean, Xfc_[:, node_idx, :], alpha=0.5)
-            x = Xnet_mean[idx_non_zero]
-            y = Xfc_mean[node_idx][idx_non_zero]
-            axs[row, col].scatter(x, y, alpha=0.5)
+        # Calculate the correlation coefficient
+        correlation = np.corrcoef(x, y)[0, 1]
 
-            # Calculate the correlation coefficient
-            correlation = np.corrcoef(x, y)[0, 1]
+        # Create a correlation line
+        fit = np.polyfit(x, y, 2)
+        coefficients = np.polyfit(x, y, 2)
+        correlation_line = np.poly1d(fit)
 
-            # Create a correlation line
-            fit = np.polyfit(x, y, 2)
-            coefficients = np.polyfit(x, y, 2)
-            correlation_line = np.poly1d(fit)
+        # Plot the correlation line
+        # axs[row, col].plot(Xnet_mean, correlation_line(Xnet_mean), color='red',
+        #                    label=f'Correlation Line (r = {correlation:.2f})')
+        axs[row, col].plot(np.sort(x), correlation_line(np.sort(x)),
+                           label=f'(r = {correlation:.2f})', color='red')
 
-            # Plot the correlation line
-            # axs[row, col].plot(Xnet_mean, correlation_line(Xnet_mean), color='red',
-            #                    label=f'Correlation Line (r = {correlation:.2f})')
-            axs[row, col].plot(np.sort(x), correlation_line(np.sort(x)),
-                               label=f'(r = {correlation:.2f})', color='red')
+        # Set labels and title
+        axs[row, col].set_xlabel('coreness')
+        axs[row, col].set_ylabel('correlation')
+        axs[row, col].set_title(f'{full_n_name[node_idx]}, C={Xnet_mean[node_idx]:.2f}')
 
-            # Set labels and title
-            axs[row, col].set_xlabel('coreness')
-            axs[row, col].set_ylabel('correlation')
-            axs[row, col].set_title(f'{n_name_full[node_idx]}, C={Xnet_mean[node_idx]:.2f}')
-
-            # Add a legend
-            axs[row, col].legend()
+        # Add a legend
+        axs[row, col].legend()
 
     fig.suptitle(f"{plot_name}", fontsize=16)
     plt.tight_layout()
