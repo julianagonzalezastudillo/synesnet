@@ -3,17 +3,13 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from tools import load_fc, load_net_metrics, load_node_names
+from config import DATA_DIR, PLOT_PATH, P_VAL
 
 
-path = '/Users/juliana.gonzalez/ownCloud/graph_analysis/'
-net_path = os.path.join(path, 'net_metrics', 'new')
-
-corr_type = "_thr"
 metric = "coreness"
-P_VAL = 0.05
 
 # Open stats file
-stats_file = os.path.join(path, 'results', 'stats_results.csv')
+stats_file = os.path.join(DATA_DIR, 'results', 'stats_results.csv')
 df_stats = pd.read_csv(stats_file)
 idx_select = np.array(df_stats['node_idx'][(df_stats['metric'] == metric) & (df_stats['p-val_corrected'] < P_VAL)])
 
@@ -21,7 +17,7 @@ idx_select = np.array(df_stats['node_idx'][(df_stats['metric'] == metric) & (df_
 n_name, full_n_name = load_node_names()
 
 # Load net metrics for all subjects
-Xnet_syn, Xnet_ctr = load_net_metrics(net_path, metric, corr_type)  # [sub x nodes]
+Xnet_syn, Xnet_ctr = load_net_metrics(metric)  # [sub x nodes]
 Xnet_syn_mean = Xnet_syn.mean(axis=0)
 Xnet_ctr_mean = Xnet_ctr.mean(axis=0)
 

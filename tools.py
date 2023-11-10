@@ -89,7 +89,5 @@ def save_mat_file(X, xyz, rgb_values, n_name, X_name, plot_path):
             'names_idx': np.nonzero(X[ind])[0]
         }
 
-        nodes_file = os.path.join(plot_path, f'{X_name}{side}.mat')
-        sio.savemat(nodes_file, Xvalues)
-        print(nodes_file)
-
+        sio.savemat(plot_path / f"{X_name}{side}.mat", Xvalues)
+        print(plot_path / f"{X_name}{side}.mat")

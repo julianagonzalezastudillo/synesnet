@@ -16,13 +16,10 @@ import statsmodels.stats.multitest as smt
 from statsmodels.stats.multitest import multipletests
 import statsmodels
 from tools import load_net_metrics, load_xyz, load_node_names
+from config import DATA_DIR, P_VAL
 
-
-path = '/Users/juliana.gonzalez/ownCloud/graph_analysis/'
-net_path = os.path.join(path, 'net_metrics', 'new')
 
 # CONSTANTS
-P_VAL = 0.05
 SELECTION = True  # True: select base on strength significance
 metric_list = ['strength', 'coreness']
 
@@ -38,7 +35,7 @@ for net_key in metric_list:
 
     # Load net metrics for all subjects
     metric = 'coreness_norm_by_rand_conserve_strenght_distribution' if net_key == 'coreness' else net_key
-    Xnet_syn, Xnet_ctr = load_net_metrics(net_path, metric, idx_select=idx_select)
+    Xnet_syn, Xnet_ctr = load_net_metrics(metric, idx_select=idx_select)
 
     # Perform t-test, Student's t-test for independent samples
     t_val, p_val = stats.ttest_ind(Xnet_syn, Xnet_ctr)
@@ -58,7 +55,7 @@ for net_key in metric_list:
     p_val_corrected[rank_idx] = p_val_corrected_
 
     if net_key == 'coreness':
-        Xnet_syn, Xnet_ctr = load_net_metrics(net_path, net_key, idx_select=idx_select)
+        Xnet_syn, Xnet_ctr = load_net_metrics(net_key, idx_select=idx_select)
 
     # Create DataFrame for results
     df = pd.DataFrame({'node': np.array(n_name)[idx_select],
@@ -82,5 +79,5 @@ for net_key in metric_list:
 
 # Concatenate the list of DataFrames into a single DataFrame and save to .csv file
 df_stats = pd.concat(df_select, axis=0, ignore_index=True)
-stats_file = os.path.join(path, 'results', 'stats_results.csv')
-df_stats.to_csv(stats_file, index=False)
+stats_file = os.path.join(DATA_DIR, 'results', 'stats_results.csv')
+# df_stats.to_csv(stats_file, index=False)

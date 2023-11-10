@@ -2,45 +2,46 @@
 =================================
             SYNESNET
 =================================
-Plot statistical analysis performed in net_stats_t-test.py
-results in .png and also save for complementary 3D oplot in matlab
+Plot statistical analysis performed in net_stats_t-test.py for strength and coreness.
+Save results in .png and also save for complementary 3D plot in matlab.
+Also generate .mat file to plot reference nodes in matlab.
 """
 
-import os.path
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
-from os import path
 import pandas as pd
-import sys
 from viz.netlocal import plot_3d_local_metric
 from tools import load_xyz, load_node_names, save_mat_file
+from config import DATA_DIR, PLOT_DIR, P_VAL, CORR_TYPE
 
-
-sys.path.append(path.abspath('../netviz'))
-path = '/Users/juliana.gonzalez/ownCloud/graph_analysis/'
-plot_path = os.path.join(os.getcwd(), 'plots', 'glb', 'new')
 
 # CONSTANTS
 SELECTION = True  # True: select base on strength significance
-P_VAL = 0.05
-corr_type = '_thr'
-metric_list = ['strength', 'coreness']
-cmap = plt.colormaps['Spectral'].reversed()
+metric_list = ["strength", "coreness"]
+cmap = plt.colormaps["Spectral"].reversed()
 
 # nodes nodes positions and names
 xyz = load_xyz()
 n_name, n_name_full = load_node_names()
 
 # Open strength t-val file
-stats_file = os.path.join(path, 'results', 'stats_results.csv')
+stats_file = DATA_DIR / "results" / "stats_results.csv"
 df_stats = pd.read_csv(stats_file)
 
 for metric in metric_list:
-    X_name = f'{metric}{corr_type}_t-val'
-    p_val_type = 'p-val' if metric == 'strength' else 'p-val_corrected'
-    idx_select = np.array(df_stats['node_idx'][(df_stats['metric'] == metric) & (df_stats[p_val_type] < P_VAL)])
-    t_vals = np.array(df_stats['t-val'][(df_stats['metric'] == metric) & (df_stats[p_val_type] < P_VAL)])
+    X_name = f"{metric}{CORR_TYPE}_t-val"
+    p_val_type = "p-val" if metric == "strength" else "p-val_corrected"
+    idx_select = np.array(
+        df_stats["node_idx"][
+            (df_stats["metric"] == metric) & (df_stats[p_val_type] < P_VAL)
+        ]
+    )
+    t_vals = np.array(
+        df_stats["t-val"][
+            (df_stats["metric"] == metric) & (df_stats[p_val_type] < P_VAL)
+        ]
+    )
 
     # Create an empty matrix of subjects and nodes and replace the significant nodes with its values
     X = np.zeros(np.shape(n_name))
@@ -53,8 +54,10 @@ for metric in metric_list:
 
     # Plot and generate scatter info to plot in matlab
     X_size = abs(pow(X, 2) / max(abs(pow(X, 2)))) * 80
-    fig, ax, scatter, cbar = plot_3d_local_metric(X_size, X, xyz, n_name, cmap=cmap, return_scatter=True, **kwargs)
-    # plt.savefig(os.path.join(plot_path, f'{X_name}.png'), transparent=True)
+    fig, ax, scatter, cbar = plot_3d_local_metric(
+        X_size, X, xyz, n_name, cmap=cmap, return_scatter=True, **kwargs
+    )
+    # plt.savefig(PLOT_DIR / f"{X_name}.png", transparent=True)
     plt.show()
 
     cmap = scatter.get_cmap()
@@ -62,5 +65,28 @@ for metric in metric_list:
 
     # save .mat to plot 3D brain with matlab
     # for each hemisphere individually
-    save_mat_file(X, xyz, rgb_values, n_name, X_name, plot_path)
+    # save_mat_file(X, xyz, rgb_values, n_name, X_name, PLOT_DIR)
 
+# Plot node references
+# the 16 significant nodes order as in the results table
+ref_name = "reference_numbers"
+
+# Filter significant nodes directly using boolean indexing
+significant_coreness_nodes = (
+    df_stats[df_stats["metric"] == "coreness"]
+    .sort_values(by="p-val_corrected")["node_idx"]
+    .values
+)
+
+# Create an array X_all with 1s for significant nodes
+X_all = np.zeros(np.shape(X))
+X_all[significant_coreness_nodes] = 0.1
+
+# Replace n_names by numbers in the table
+for i, idx in enumerate(significant_coreness_nodes):
+    n_name[idx] = str(i + 1)
+
+# White nodes
+rgb_values = np.ones(np.shape(rgb_values))
+
+# save_mat_file(X_all, xyz, rgb_values, n_name, ref_name, PLOT_DIR)
