@@ -9,15 +9,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from viz.netlocal import plot_3d_local_metric
 from tools import load_net_metrics, load_xyz, load_node_names, save_mat_file
-from config import PLOT_PATH, CORR_TYPE
-from pathlib import Path
+from config import PLOT_DIR, CORR_TYPE
 
-
-PLOT_DIR = Path(PLOT_PATH)
-PLOT_DIR.mkdir(parents=True, exist_ok=True)
 
 # CONSTANTS
-X_name = f'coreness{CORR_TYPE}_diff_syn-ctr'
+X_name = f"coreness{CORR_TYPE}_diff_syn-ctr"
 
 # nodes nodes positions and names
 xyz = load_xyz()
@@ -38,7 +34,9 @@ X_max = np.max(abs(X))
 norm = plt.Normalize(vmin=-X_max, vmax=X_max)
 kwargs = {"norm": norm}
 X_size = abs(pow(X, 2) / pow(X_max, 2)) * 80
-fig, ax, scatter, cbar = plot_3d_local_metric(X_size, X, xyz, n_name, return_scatter=True, **kwargs)
+fig, ax, scatter, cbar = plot_3d_local_metric(
+    X_size, X, xyz, n_name, return_scatter=True, **kwargs
+)
 # plt.savefig(PLOT_DIR / f"{X_name}.png"), transparent=True)
 plt.show()
 
