@@ -15,6 +15,17 @@ from config import DATA_DIR, NET_DIR, NODE_FILE, INFO_FILE, N_SUB, CORR_TYPE
 def load_net_metrics(
     metric, corr_type=CORR_TYPE, net_path=NET_DIR, n_sub=N_SUB, idx_select=slice(None)
 ):
+    """
+    Load metrics computed and saved previously.
+    :param metric: "coreness" or "strength"
+    :param corr_type: "_thr" for metrics computed on positive connectivity matrices.
+    :param net_path: path where network metric file is saved
+    :param n_sub: total number of subjects (34)
+    :param idx_select: selection of nodes to load
+    :return:
+        x_syn: matrix with vectors for selected metric for each synesthets subject
+        x_ctr: matrix with vectors for selected metric for each control subject
+    """
     xnet = np.array(
         [
             io.loadmat(net_path / f"net_metrics_Subject{str(sub).zfill(3)}{corr_type}")[
@@ -39,7 +50,13 @@ def load_net_metrics(
 
 
 def load_fc(n_sub=N_SUB):
-    # Load all connectivity matrices
+    """
+    Load all connectivity matrices.
+    :param n_sub: total number of subjects (34)
+    :return:
+        fc_syn: FC matrices for 17 synethets subjects
+        fc_ctr: FC matrices for 17 control subjects
+    """
     fc_all = []
     for sub in np.arange(n_sub) + 1:
         # load correlation
@@ -63,7 +80,12 @@ def load_fc(n_sub=N_SUB):
 
 
 def load_node_names():
-    # nodes names
+    """
+    Load nodes names from file.
+    :return:
+        n_name: node names abbreviation
+        n_name_full: node names complete
+    """
     n_name, n_name_full = [], []
     with open(NODE_FILE, "r") as filestream:
         for line in filestream:
@@ -75,12 +97,27 @@ def load_node_names():
 
 
 def load_xyz():
+    """
+    Load 3D positions from file.
+    :return:
+        xyz: matrix with 3D positions [246 x 3]
+    """
     xyz = io.loadmat(INFO_FILE)["xyz"][0][:-1]
     xyz = np.array([x[0] for x in xyz])
     return xyz
 
 
 def save_mat_file(X, xyz, rgb_values, n_name, X_name, plot_path):
+    """
+    Save .mat to do 3D brain plots.
+    :param X: vector with nodes values
+    :param xyz: 3D nodes positions
+    :param rgb_values: 4D matrix with nodes colors [246 x 4]
+    :param n_name: nodes names
+    :param X_name: file name
+    :param plot_path: path to save
+    :return: save .mat
+    """
     # select index for left and right hemisphere
     lh_ind = [
         index
