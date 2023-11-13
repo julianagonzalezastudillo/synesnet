@@ -1,122 +1,135 @@
+"""
+=================================
+            SYNESNET
+=================================
+Plot FC differences for the 5 nodes with significant difference between synesthets and controls.
+"""
+
 import os.path
-from scipy import io
 import numpy as np
-from copy import deepcopy
-from tools import load_net_metrics
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.colors as colors
+import pandas as pd
 import scipy.io as sio
 from viz.netlocal import plot_3d_local_metric
+import seaborn as sns
+from tools import load_fc, load_xyz, load_node_names, save_mat_file
+from config import DATA_DIR, PLOT_DIR, P_VAL
 
 
-path = '/Users/juliana.gonzalez/ownCloud/graph_analysis/'
-net_path = os.path.join(path, 'net_metrics')
-strength_stat_file = os.path.join(os.getcwd(), 'plots', 'glb', 'strength_thr_t-val.mat')
-node_file = os.path.join(path, 'BN_Atlas_246_LUT_reoriented.txt')
-results_file = os.path.join(path, 'resultsROI_Subject001_Condition001.mat')
+# Open strength t-val file
+stats_file = os.path.join(DATA_DIR, "results", "stats_results.csv")
+df_stats = pd.read_csv(stats_file)
+idx_select = np.array(
+    df_stats["node_idx"][
+        (df_stats["metric"] == "coreness") & (df_stats["p-val_corrected"] < P_VAL)
+    ]
+)
 
-corr_type = "_thr"
-num_sub = len(os.listdir(os.path.join(path, 'symetrical_corr_mat')))
-idx_select = [5, 70, 128, 133, 9, 64, 68, 25, 10]  # obtained from previous results
-
-# nodes names
-n_name, n_name_full = [], []
-with open(node_file, "r") as filestream:
-    for line in filestream:
-        name, name_full = line.split(",")[:2]
-        n_name.append(name)
-        n_name_full.append(name_full.strip())
-
-# nodes positions
-xyz = io.loadmat(results_file)['xyz'][0][:-1]
-xyz = np.array([x[0] for x in xyz])
-
-# Load net metrics for all subjects
-Xnet = load_net_metrics(net_path, "coreness", corr_type, num_sub, slice(None))  # [sub x nodes]
-
-# Split synesthetic and control subjects
-# Xnet[np.isnan(Xnet) | np.isinf(Xnet)] = 0
-Xnet_syn = Xnet[:17, :]
-Xnet_ctr = Xnet[17:, :]
-Xnet_syn_mean = Xnet[:17, :].mean(axis=0)
-Xnet_ctr_mean = Xnet[17:, :].mean(axis=0)
+# nodes positions and names
+xyz = load_xyz()
+n_name, full_n_name = load_node_names()
 
 # Load all connectivity matrices
-Xfc_all = []
-for sub in np.arange(num_sub)+1:
-    # load correlation
-    sub_file = 'CorrMatrix_Subject{0}.mat'.format(str(sub).zfill(3))
-    fc_file = path + 'symetrical_corr_mat/' + sub_file
-    fc = io.loadmat(fc_file)
-
-    # 3. corr[corr>=0] = [0, 1]  # winning matrices !!!
-    Xfc_thr = deepcopy(fc['CorrMatrix'])
-    Xfc_thr[Xfc_thr <= 0] = 0
-    np.fill_diagonal(Xfc_thr, 0)
-
-    # Append matrices
-    Xfc_all.append(Xfc_thr)
+Xfc_syn, Xfc_ctr = load_fc()
 
 # Reshape all matrices
-Xfc_all = np.concatenate([mat.reshape(1, *np.shape(Xfc_thr)) for mat in Xfc_all], axis=0)
-Xfc_syn = Xfc_all[:17]
-Xfc_ctr = Xfc_all[17:]
-Xfc_syn_mean = Xfc_all[:17].mean(axis=0)
-Xfc_ctr_mean = Xfc_all[17:].mean(axis=0)
+Xfc_syn_mean = Xfc_syn.mean(axis=0)
+Xfc_ctr_mean = Xfc_ctr.mean(axis=0)
 
 # save matrices for plot
 Xfc = Xfc_syn_mean[idx_select] - Xfc_ctr_mean[idx_select]
-Xfc_max = np.max(Xfc)
-Xfc_min = np.min(Xfc)
-
-cmap_colors = ['#11205E', '#203FB6', '#86CAFF', 'white', '#FFEC4A', '#F62336', '#80121B']
-positions = np.linspace(0, 1, len(cmap_colors))
-cmap = LinearSegmentedColormap.from_list('custom_colormap', list(zip(positions, cmap_colors)))
+Xfc_diff_mean = np.mean(Xfc_syn_mean[idx_select] - Xfc_ctr_mean[idx_select], axis=0)
 
 # plot each node in
-for X, node_idx in zip(np.vstack((Xfc, np.mean(Xfc_syn_mean[idx_select] - Xfc_ctr_mean[idx_select], axis=0))),
-                       np.append(idx_select, 247)):
+for X, node_idx in zip(
+    np.vstack((Xfc, Xfc_diff_mean)),
+    np.append(idx_select, 247),
+):
+    # Plot and generate scatter info to plot in matlab
     X_size = abs(pow(X, 2) / max(abs(pow(X, 2)))) * 80
-
     norm = colors.TwoSlopeNorm(vmin=-max(abs(X)), vmax=max(abs(X)), vcenter=0)
     kwargs = {"norm": norm}
-    fig, ax, scatter, cbar = plot_3d_local_metric(X_size, X, xyz, n_name, cmap=cmap, return_scatter=True, **kwargs)
+    fig, ax, scatter, cbar = plot_3d_local_metric(
+        X_size, X, xyz, n_name, return_scatter=True, **kwargs
+    )
+    # plt.savefig(PLOT_DIR / f"Xfc_mean.png"), transparent=True)
     plt.show()
 
-    cmap = scatter.get_cmap()
-    rgb_values = cmap(norm(X))
+# save .mat to plot 3D brain with matlab
+# for each hemisphere individually
+cmap = scatter.get_cmap()
+rgb_values = cmap(norm(X))
+save_mat_file(X, xyz, rgb_values, n_name, "Xfc_mean", PLOT_DIR)
 
-    file_name = f"{node_idx}_Xfc_mean.mat"
-    # file_name = f"Xfc_mean.mat"
-    X_ = {'Xnet': X,
-           'xyz': xyz,
-           'color': rgb_values,
-           'names': np.array(n_name),  # to mention only the significant nodes
-           'names_idx': np.nonzero(X)
-           }
-    # sio.savemat(file_name, X_)
-    # print(f"{node_idx}: {n_name_full[node_idx]}")
-
+print(
+    f"mean connectivity difference: {np.mean(Xfc_syn_mean[idx_select] - Xfc_ctr_mean[idx_select])}"
+)
 
 # save matrices of FC difference
-file_name = "Xfc_syn-Xfc_ctr(9nodes).mat"
-idx_select = [5, 70, 128, 133, 9, 64, 68, 25, 10]  # obtained from previous results
+file_name = PLOT_DIR / "Xfc_syn-Xfc_ctr(5nodes).mat"
 X_diff = Xfc_syn_mean[idx_select] - Xfc_ctr_mean[idx_select]
-X_ = {'diff_correlation_syn_ctr_nine_nodes': X_diff}
+X_ = {"diff_correlation_syn_ctr_five_nodes": X_diff}
 # sio.savemat(file_name, X_)
 
-file_name = "Xfc_syn-Xfc_ctr_mean(9nodes).mat"
+file_name = PLOT_DIR / "Xfc_syn-Xfc_ctr_mean(5nodes).mat"
 X_diff_mean = np.mean(Xfc_syn_mean[idx_select] - Xfc_ctr_mean[idx_select], axis=0)
-X_ = {'mean_diff_correlation_syn_ctr_nine_nodes': X_diff_mean}
+X_ = {"mean_diff_correlation_syn_ctr_five_nodes": X_diff_mean}
 # sio.savemat(file_name, X_)
 
-file_name = "Xfc_syn_sub(9nodes).mat"
+file_name = PLOT_DIR / "Xfc_syn_sub(5nodes).mat"
 X_sub = Xfc_syn[:, idx_select, :]
-X_ = {'correlation_syn_nine_nodes': X_sub}
+X_ = {"correlation_syn_five_nodes": X_sub}
 # sio.savemat(file_name, X_)
 
-file_name = "Xfc_ctr_sub(9nodes).mat"
+file_name = PLOT_DIR / "Xfc_ctr_sub(5nodes).mat"
 X_sub = Xfc_ctr[:, idx_select, :]
-X_ = {'correlation_ctr_nine_nodes': X_sub}
+X_ = {"correlation_ctr_five_nodes": X_sub}
 # sio.savemat(file_name, X_)
+
+
+# %% Plot connectivity matrices for nodes with significant difference in terms of coreness
+sns.set_theme(style="white")
+cmap_colors = ["white", "#FFEC4A", "#F62336", "#80121B"]
+positions = np.linspace(0, 1, len(cmap_colors))
+cmap = LinearSegmentedColormap.from_list(
+    "custom_colormap", list(zip(positions, cmap_colors))
+)
+
+xticklabels = np.array(full_n_name)[idx_select]
+yticklabels = np.array(full_n_name)[idx_select]
+
+X_max = np.max(
+    [Xfc_syn_mean[idx_select][:, idx_select], Xfc_ctr_mean[idx_select][:, idx_select]]
+)
+X_min = np.min(
+    [Xfc_syn_mean[idx_select][:, idx_select], Xfc_ctr_mean[idx_select][:, idx_select]]
+)
+
+# Draw the heatmap with the mask and correct aspect ratio
+for X, sub_type in zip(
+    [Xfc_syn_mean, Xfc_ctr_mean],
+    ["SYN", "CTR"],
+):
+    f, ax = plt.subplots(figsize=(12, 10))
+    heatmap = sns.heatmap(
+        X[idx_select][:, idx_select],
+        cmap=cmap,
+        vmax=X_max,
+        vmin=X_min,
+        linewidths=0.0,
+        cbar_kws={"shrink": 0.9},
+        xticklabels=xticklabels,
+        yticklabels=yticklabels,
+    )
+
+    # Rotate the yticklabels
+    plt.xticks(rotation=30, fontsize=16)
+    plt.yticks(rotation=30, fontsize=16)
+    ax.set_aspect("equal")
+    plt.tight_layout()
+    cbar = heatmap.collections[0].colorbar
+    cbar.ax.tick_params(labelsize=16)  # Adjust the font size as needed
+    plt.title(sub_type, fontsize=24)
+    plt.show()
