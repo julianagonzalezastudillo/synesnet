@@ -64,6 +64,16 @@ def load_fc(n_sub=N_SUB):
         fc_file = DATA_DIR / "symetrical_corr_mat/" / sub_file
         fc = io.loadmat(fc_file)
 
+        # connectivity matrix
+        # work with 3 possibilities of connectivity matrices
+        # 1. corr = [-1, 1]
+        # Xfc = deepcopy(fc['CorrMatrix'])
+        # net_file_Xfc = net_path + '_'.join(('net_metrics', 'Subject{0}.mat'.format(str(sub).zfill(3))))
+
+        # 2. abs(corr) = [0, 1]
+        # Xfc_abs = abs(deepcopy(fc['CorrMatrix']))
+        # net_file_abs = net_path + '_'.join(('net_metrics', 'Subject{0}'.format(str(sub).zfill(3)), '_abs.mat'))
+
         # 3. corr[corr>=0] = [0, 1]  # winning matrices !!!
         fc_thr = deepcopy(fc["CorrMatrix"])
         fc_thr[fc_thr <= 0] = 0
