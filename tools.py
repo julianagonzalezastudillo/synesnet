@@ -28,9 +28,9 @@ def load_net_metrics(
     """
     xnet = np.array(
         [
-            io.loadmat(net_path / f"net_metrics_Subject{str(sub).zfill(3)}{corr_type}")[
-                metric
-            ][0]
+            io.loadmat(
+                net_path / f"net_metrics_Subject{str(sub).zfill(3)}{corr_type}.mat"
+            )[metric][0]
             for sub in range(1, n_sub + 1)
         ]
     )

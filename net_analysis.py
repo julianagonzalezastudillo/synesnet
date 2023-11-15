@@ -2,7 +2,7 @@
 =================================
             SYNESNET
 =================================
-This module is design to extract network properties from FC matrices.
+This module is designed to extract network properties from FC matrices.
 Diagonal is put to 0 and only positive FCC are retained.
 """
 
@@ -12,7 +12,7 @@ import numpy as np
 import networkx as nx
 import bct
 from net.core import coreness
-from tools import load_fc, load_node_names
+from tools import load_fc
 from config import NET_DIR
 
 
@@ -20,7 +20,7 @@ from config import NET_DIR
 Xfc_syn, Xfc_ctr = load_fc()
 Xfc = np.concatenate((Xfc_syn, Xfc_ctr), axis=0)
 
-for sub in np.arange(24, 25):
+for sub in np.arange(np.shape(Xfc)[0]):
     net_file = NET_DIR / "_".join(
         ("net_metrics", "Subject{0}".format(str(sub + 1).zfill(3)), "thr.mat")
     )
