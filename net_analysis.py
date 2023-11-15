@@ -16,9 +16,6 @@ from tools import load_fc, load_node_names
 from config import NET_DIR
 
 
-# nodes positions and names
-n_name, full_n_name = load_node_names()
-
 # Load connectivity matrices for all subjects
 Xfc_syn, Xfc_ctr = load_fc()
 Xfc = np.concatenate((Xfc_syn, Xfc_ctr), axis=0)
