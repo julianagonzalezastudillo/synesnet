@@ -13,11 +13,8 @@ from net.core import coreness
 from copy import deepcopy
 import time
 from tools import load_net_metrics
-from config import DATA_DIR, NET_DIR
+from config import NET_DIR, RAND_DIR
 
-
-# Constants
-RAND_PATH = DATA_DIR / "rand_mat_strength(equal)"
 
 # Load original coreness computation from file generated in net_analysis.py
 Xnet_syn, Xnet_ctr = load_net_metrics("coreness")
@@ -28,7 +25,7 @@ for sub in np.arange(np.shape(C_orig)[0]):
     t = time.time()
 
     # Open random matrices (the randomized matrices are computed on Xfc>0)
-    fc_rand_file = RAND_PATH / f"RandMatrices_Subject{str(sub + 1).zfill(3)}.mat"
+    fc_rand_file = RAND_DIR / f"RandMatrices_Subject{str(sub + 1).zfill(3)}.mat"
     fc_rand = io.loadmat(fc_rand_file)
     Xfc_rand = deepcopy(fc_rand["RandMatrices"])
 
