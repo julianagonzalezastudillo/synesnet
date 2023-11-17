@@ -38,8 +38,7 @@ function nodes = generate_nodes(Xradius, xyz, maxRadius, minRadius, color, dista
         normalizedRadius(indCore) = maxRadius;
         normalizedRadius(indPeriph) = maxRadius/2;   
 
-    else % normalizeSize, Min-max normalization of sphere sizes
-        % Xradius = ones(1, 246) - 0.6
+    elseif strcmp(sizeType, 'normal') % normalizeSize, Min-max normalization of sphere sizes
         Xradius = abs(Xradius);
         normalizedRadius = (Xradius - min(abs(Xradius))) ./ (max(abs(Xradius)) - min(abs(Xradius))) .* (maxRadius - minRadius) + minRadius;
     end
