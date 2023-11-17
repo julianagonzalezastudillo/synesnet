@@ -14,6 +14,7 @@ This module is design to compute coreness in weighted networks, using strength a
 import numpy as np
 import matplotlib.pyplot as plt
 import bct
+from src.config import DATA_DIR
 
 
 def coreness(X):
@@ -111,7 +112,7 @@ def coreperiphery(X):
     # nodes with rank lower than rankOfMaxkPlus are assigned to the core,
     # the remaining ones become part of the periphery
     isCore = np.zeros(N)
-    isCore[rankingInd[0: rankOfMaxkPlus + 1]] = 1
+    isCore[rankingInd[0 : rankOfMaxkPlus + 1]] = 1
     isCore = isCore.astype(bool)
 
     plot_rank = False
@@ -175,26 +176,38 @@ def plot_core_periphery(X, kPlus, rankOfMaxkPlus, rankingInd):
     """
 
     N = np.shape(X)[0]
-    density = (np.count_nonzero(X)) / (N*(N-1))
+    density = (np.count_nonzero(X)) / (N * (N - 1))
 
-    k7 = 100/(N-1)
+    k7 = 100 / (N - 1)
     if density < round(k7, 4):
         fig = plt.figure(figsize=(12, 6), dpi=100)
-        plt.axvline(x=rankOfMaxkPlus, color='grey', linestyle='--', linewidth=4)
-        plt.plot(np.arange(rankOfMaxkPlus, N), kPlus[rankingInd[rankOfMaxkPlus:]] / np.max(kPlus),
-                 color='#203FB6', linewidth=4)
-        plt.plot(np.arange(0, rankOfMaxkPlus + 1), kPlus[rankingInd[:rankOfMaxkPlus + 1]] / np.max(kPlus),
-                 color='#F62336', linewidth=4)
+        plt.axvline(x=rankOfMaxkPlus, color="grey", linestyle="--", linewidth=4)
+        plt.plot(
+            np.arange(rankOfMaxkPlus, N),
+            kPlus[rankingInd[rankOfMaxkPlus:]] / np.max(kPlus),
+            color="#203FB6",
+            linewidth=4,
+        )
+        plt.plot(
+            np.arange(0, rankOfMaxkPlus + 1),
+            kPlus[rankingInd[: rankOfMaxkPlus + 1]] / np.max(kPlus),
+            color="#F62336",
+            linewidth=4,
+        )
         plt.xticks(fontsize=20)
         plt.yticks(fontsize=20)
         plt.ylim(0, 1)
         plt.xlim(0, len(kPlus))
 
-        plt.gca().spines['top'].set_visible(False)
-        plt.gca().spines['right'].set_visible(False)
-        plt.gca().spines['bottom'].set_visible(True)
-        plt.gca().spines['left'].set_visible(True)
+        plt.gca().spines["top"].set_visible(False)
+        plt.gca().spines["right"].set_visible(False)
+        plt.gca().spines["bottom"].set_visible(True)
+        plt.gca().spines["left"].set_visible(True)
         L = np.count_nonzero(X)
-        plot_name = f'plots/core-periphery/rank_k+_{str(L).zfill(6)}.png'
-        plt.savefig(plot_name, bbox_inches='tight', pad_inches=0, dpi=300, transparent=True)
+        CORE_DIR = DATA_DIR / "plots/core-periphery/"
+        CORE_DIR.mkdir(parents=True, exist_ok=True)
+        plot_name = CORE_DIR / f"rank_k+_{str(L).zfill(6)}.png"
+        plt.savefig(
+            plot_name, bbox_inches="tight", pad_inches=0, dpi=300, transparent=True
+        )
         plt.show()
