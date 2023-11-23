@@ -10,7 +10,7 @@ NET_DIR.mkdir(parents=True, exist_ok=True)
 RAND_DIR = DATA_DIR / "rand_mat_strength(equal)"
 RAND_DIR.mkdir(parents=True, exist_ok=True)
 
-PLOT_DIR = Path(os.getcwd(), *["plots", "glb", "new"])
+PLOT_DIR = Path(os.getcwd(), *["../plots", "glb", "new"])
 PLOT_DIR.mkdir(parents=True, exist_ok=True)
 
 
