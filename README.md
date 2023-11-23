@@ -54,7 +54,7 @@ The last threshold is determined by the maximal $\delta_{\text{max}}$ observed i
 This results in a core-periphery matrix of zeros and ones (0: periphery, 1: core) with size $N \times n_{\delta_{\text{max}}}$ (`isCore`), where the row entries correspond to each of the nodes and the columns to the density thresholds. 
 Finally, we obtained the coreness value by averaging each node across all the thresholds (`C`)
 
-$C_i = \frac{1}{N} \sum_{\delta=\delta_1}^{\delta_{\text{max}}} c_i^\delta$ .		(2)
+$C_i = \frac{1}{N} \sum_{\delta} c_i^\delta$ .		(2)
 
 
 1.	Ma A, Mondragón RJ. Rich-Cores in Networks. PLOS ONE. 2015 Mar 23;10(3):e0119678. 
