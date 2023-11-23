@@ -38,7 +38,7 @@ df_select = []
 for net_key in metric_list:
     # Load net metrics for all subjects
     metric = (
-        "coreness_norm_by_rand_conserve_strenght_distribution"
+        "coreness_norm_by_rand"
         if net_key == "coreness"
         else net_key
     )
