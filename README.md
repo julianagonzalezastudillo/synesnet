@@ -41,7 +41,7 @@ Notice that this is the simplest way to define node richness, and other metrics 
 Then we divide the links of each node $i$ in two groups, those towards nodes with lower richness ($s_i^-$) and those towards nodes with higher richness ($s_i^+$). 
 Hence, we can specifically decompose the strength of node $i$ as
 
-$s_i=s_i^-+s_i^+$.		(1)
+$s_i=s_i^-+s_i^+$.
 
 Subsequently, the nodes are ranked in descending order of their richness. 
 The node with the maximum $s_i^+$ within the rank finally determines the frontier between core and periphery (Fig. B). 
@@ -54,7 +54,7 @@ The last threshold is determined by the maximal $\delta_{\text{max}}$ observed i
 This results in a core-periphery matrix of zeros and ones (0: periphery, 1: core) with size $N \times n_{\delta_{\text{max}}}$ (`isCore`), where the row entries correspond to each of the nodes and the columns to the density thresholds. 
 Finally, we obtained the coreness value by averaging each node across all the thresholds (`C`)
 
-$C_i = \frac{1}{N} \sum_{\delta} c_i^\delta$ .		(2)
+$C_i = \frac{1}{N} \sum_{\delta} c_i^\delta$.
 
 
 1.	Ma A, Mondragón RJ. Rich-Cores in Networks. PLOS ONE. 2015 Mar 23;10(3):e0119678. 
