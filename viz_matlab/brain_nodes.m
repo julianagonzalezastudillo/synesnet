@@ -1,18 +1,22 @@
 clear
+%close all
 
 % Parameters 
 aa = 0.1;
 range_shading_brain = [0.6 1];
 range_shading_nodes = [0 1];
 distance_factor = 1.05;
-sizeType = 'unique';
+sizeType = 'normal';
 
 % load brain
 load('brain_surface.mat');
 
 % load nodes
 addpath('/Users/juliana.gonzalez/ownCloud/github/synesnet/plots/glb/')
-nodes_file = 'coreness_thr_mean_ctr_selection.mat';
+% nodes_file = 'coreness_thr_mean_ctr_selection.mat';
+
+addpath('/Users/juliana.gonzalez/ownCloud/github/synesnet/')
+nodes_file = 'coreness_thr_mean_ctr.mat';
 
 load(nodes_file);
 
@@ -87,4 +91,4 @@ ylabel('Y');
 zlabel('Z');
 grid off
 axis off
-% view(0, 90);
+view(0, 90);

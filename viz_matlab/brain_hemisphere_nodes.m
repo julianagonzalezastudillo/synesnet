@@ -13,15 +13,16 @@ range_shading_nodes = [0 1];
 distance_factor = 1.1;
 sphere_maxRadius = 5;
 sphere_minRadius = 2;
-sizeType = 'unique';
+sizeType = 'normal';
+node_names = true;
 
 % load nodes
-addpath('/Users/juliana.gonzalez/ownCloud/github/synesnet/plots/glb/')
-file_name = 'coreness_thr_mean_ctr_selection';
+addpath('/Users/juliana.gonzalez/ownCloud/github/synesnet/plots/glb/new')
+file_name = 'reference_numbers';
 
 % for each hemisphere
-for i = 1:length(sides)
-    side = sides{i};
+for s = 1:length(sides)
+    side = sides{s};
     % get hemisphere data (hemisphereSurface)
     load(append('hemisphere_surface_', side, '.mat'));
     
@@ -29,9 +30,9 @@ for i = 1:length(sides)
     load(append(file_name, '_', side, '.mat'));
     
     % significant nodes names
-    names = string(names);
-    names_ = regexprep(names, '\s', ''); % Remove spaces using regular expression
-    names_idx_ = names_idx +1; % beacuse it comes from python
+    names_ = string(names);
+    names_ = strrep(names_, ' ', ''); % Remove spaces using regular expression
+    names_idx_ = names_idx ; % beacuse it comes from python
     
     % generate spheres
     nodes_h = generate_nodes(Xnet, xyz, sphere_maxRadius, sphere_minRadius, color, distance_factor, sizeType);
@@ -82,13 +83,17 @@ for i = 1:length(sides)
         'FaceVertexCData', nodes_h.colors);
     
     % Add label names
-    for i = 1:length(names_)
-        % offset = i * 2 * maxRadius;
-        label = sprintf(names_(i));
-        % text(nodes_h.xyz(names_idx_(i), 1), ...
-        %     nodes_h.xyz(names_idx_(i), 2) +6, ...
-        %     nodes_h.xyz(names_idx_(i), 3) -3, label, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 12, 'FontWeight', 'bold');
-    end
+    % if node_names == true
+    %     for i = 1:length(names_)
+    %         % offset = i * 2 * maxRadius;
+    %         label = sprintf(names_(i));
+    %         text(nodes_h.xyz(names_idx_(i) + 1, 1), ...
+    %              nodes_h.xyz(names_idx_(i) + 1, 2) +6, ...
+    %              nodes_h.xyz(names_idx_(i) + 1, 3) -3, label, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'FontSize', 12, 'FontWeight', 'bold');
+    %     end
+    % end
+
+
     
     % Set the desired figure size
     figureWidth = 600;  % Width in pixels
@@ -100,7 +105,7 @@ for i = 1:length(sides)
     axis equal;
     grid off
     axis off
-    % view(90, 0);  % lateral view
+    view(90, 0);  % lateral view
     % view(0, 90);  % top view
     % view(270, 0); % lateral view
 end
