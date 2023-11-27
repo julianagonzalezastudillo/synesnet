@@ -54,7 +54,7 @@ for X, node_idx in zip(
     fig, ax, scatter, cbar = plot_3d_local_metric(
         X_size, X, xyz, n_name, return_scatter=True, **kwargs
     )
-    # plt.savefig(PLOT_DIR / f"Xfc_mean.png"), transparent=True)
+    # plt.savefig(PLOT_DIR / f"Xfc_mean.png", transparent=True)
     plt.show()
 
 # save .mat to plot 3D brain with matlab
