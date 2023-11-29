@@ -15,10 +15,8 @@ PLOT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # Files
-NODE_FILE = os.path.join(DATA_DIR, "BN_Atlas_246_LUT_reoriented.txt")
-INFO_FILE = os.path.join(
-    DATA_DIR, "resultsROI_Subject001_Condition001.mat"
-)  # results_file
+NODE_FILE = DATA_DIR / "BN_Atlas_246_LUT_reoriented.txt"
+INFO_FILE = DATA_DIR / "resultsROI_Subject001_Condition001.mat"  # results_file
 
 
 # Application settings
