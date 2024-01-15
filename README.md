@@ -5,7 +5,8 @@ This repository contains the code and supporting documents associated with the f
 
 Please cite as:
 
-Hauw F. *, Gonzalez-Astudillo J. *, De Vico Fallani F., Cohen L. "Increased core-periphery connectivity in ticker-tape synesthetes." Brain (2024): awae001.
+[Hauw F. *, Gonzalez-Astudillo J. *, De Vico Fallani F., Cohen L. "Increased core-periphery connectivity in ticker-tape synesthetes." Brain (2024): awae001.](https://academic.oup.com/brain/advance-article/doi/10.1093/brain/awae001/7510818?utm_source=authortollfreelink&utm_campaign=brain&utm_medium=email&guestAccessKey=28b92229-3e1b-4d0e-b415-828619dd8692)
+
 
  * These authors contributed equally to this work.
 ---
