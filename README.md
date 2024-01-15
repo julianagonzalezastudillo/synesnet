@@ -3,10 +3,11 @@ SYNESNET
 This repository contains the code and supporting documents associated with the following manuscript:
 
 
-<!-- Please cite as:
+Please cite as:
 
-Hauw F. *, Gonzalez-Astudillo J. *, De Vico Fallani F., Cohen L. (2023). Increased core-periphery connectivity in ticker-tape synesthetes. ArXiv. -->
+Hauw F. *, Gonzalez-Astudillo J. *, De Vico Fallani F., Cohen L. "Increased core-periphery connectivity in ticker-tape synesthetes." Brain (2024): awae001.
 
+ * These authors contributed equally to this work.
 ---
 ## Authors:
 * Fabien Hauw , MD, PhD candidate, Sorbonne Université, AP-HP, Paris Brain Institute
